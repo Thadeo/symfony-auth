@@ -7,3 +7,6 @@ controllers:
 # API Authenticator
 api_auth:
     path: /api/auth
+
+module_controllers:
+    resource: "@Module/config/routes.yaml"

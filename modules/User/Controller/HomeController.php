@@ -1,5 +1,5 @@
 <?php
-namespace App\Module\User\Controller;
+namespace Module\User\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -9,6 +9,6 @@ class HomeController extends AbstractController{
 
     #[Route('/user', name: 'app_user_hello')]
     public function index() : Response {
-        return $this->render('@Module/index.html.twig');
+        return $this->render('@Module/user/templates/index.html.twig');
     }
 }

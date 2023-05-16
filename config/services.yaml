@@ -24,11 +24,20 @@ services:
         tags:
             - { name: kernel.event_listener, event: kernel.exception }
 
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
-    
+    # makes classes in modules/ available to be used as services
+    # this creates a service per class whose id is the fully-qualified class name
+    Module\:
+        resource: '../modules/*'
+        exclude:
+            - '../modules/DependencyInjection/'
+            - '../modules/Entity/'
+            - '../modules/Module.php'
+
     # Module Path
     App\Service\ModuleService:
         arguments:
-            $modulePath: '%kernel.project_dir%/src/Module/'
+            $modulePath: '%kernel.project_dir%/modules/'
             $uploadFileLimit: '10' # 10MB
+
+    # add more service definitions when explicit configuration is needed
+    # please note that last definitions always *replace* previous ones

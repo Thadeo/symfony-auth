@@ -1,0 +1,3 @@
+user_controllers:
+    resource: '@Module/User/Controller'
+    type: attribute

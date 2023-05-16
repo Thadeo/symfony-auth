@@ -1,3 +1,0 @@
-user_controllers:
-    resource: ../../../src/Module/User/Controller/
-    type: attribute

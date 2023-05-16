@@ -8,5 +8,6 @@ controllers:
 api_auth:
     path: /api/auth
 
+# Handle Module Router
 module_controllers:
     resource: "@Module/config/routes.yaml"

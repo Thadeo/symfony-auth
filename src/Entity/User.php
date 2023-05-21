@@ -68,10 +68,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToOne(mappedBy: 'user', cascade: ['persist', 'remove'])]
     private ?UserRoles $role = null;
 
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Sessions::class)]
+    private Collection $sessions;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: UserActivity::class)]
+    private Collection $userActivities;
+
     public function __construct()
     {
         $this->userPhones = new ArrayCollection();
         $this->userAddresses = new ArrayCollection();
+        $this->sessions = new ArrayCollection();
+        $this->userActivities = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -342,6 +350,66 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         $this->role = $role;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Session>
+     */
+    public function getSessions(): Collection
+    {
+        return $this->sessions;
+    }
+
+    public function addSession(Sessions $session): self
+    {
+        if (!$this->sessions->contains($session)) {
+            $this->sessions->add($session);
+            $session->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSession(Sessions $session): self
+    {
+        if ($this->sessions->removeElement($session)) {
+            // set the owning side to null (unless already changed)
+            if ($session->getUser() === $this) {
+                $session->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, UserActivity>
+     */
+    public function getUserActivities(): Collection
+    {
+        return $this->userActivities;
+    }
+
+    public function addUserActivity(UserActivity $userActivity): self
+    {
+        if (!$this->userActivities->contains($userActivity)) {
+            $this->userActivities->add($userActivity);
+            $userActivity->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUserActivity(UserActivity $userActivity): self
+    {
+        if ($this->userActivities->removeElement($userActivity)) {
+            // set the owning side to null (unless already changed)
+            if ($userActivity->getUser() === $this) {
+                $userActivity->setUser(null);
+            }
+        }
 
         return $this;
     }

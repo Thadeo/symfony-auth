@@ -1,14 +1,14 @@
 <?php
 namespace Module\User\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Component\Controller\ModuleController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-class HomeController extends AbstractController{
+class HomeController extends ModuleController{
 
     #[Route('/user', name: 'app_user_hello')]
     public function index() : Response {
-        return $this->render('@Module/user/templates/index.html.twig');
+        return $this->moduleview('@Module/user', '/index.html.twig');
     }
 }

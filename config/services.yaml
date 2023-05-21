@@ -24,6 +24,16 @@ services:
         tags:
             - { name: kernel.event_listener, event: kernel.exception }
 
+    App\Component\Session\PdoSessionHandler:
+        arguments:
+            - '%env(DATABASE_URL)%'
+            - { db_id_col: ids, db_data_col: data, db_time_col: time, db_lifetime_col: lifetime, lock_mode: 0 }
+            - '@doctrine.orm.default_entity_manager'
+            - '@security.token_storage'
+            
+            # you can also use PDO configuration, but requires passing two arguments
+            # - 'mysql:dbname=mydatabase; host=myhost; port=myport'
+
     # makes classes in modules/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
     Module\:
@@ -38,6 +48,22 @@ services:
         arguments:
             $modulePath: '%kernel.project_dir%/modules/'
             $uploadFileLimit: '10' # 10MB
+
+    # Twig Setting Extension
+    App\Service\SettingService:
+        arguments:
+            $entityManager: '@doctrine.orm.entity_manager'
+    App\Component\Twig\SettingExtension:
+        arguments:
+            - '@App\Service\SettingService'
+        tags:
+            - { name: twig.extension }
+
+    # Custom Controller
+    App\Component\Controller\AuthController:
+    App\Component\Controller\ModuleController:
+        tags:
+            - { name: controller.service_arguments }
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

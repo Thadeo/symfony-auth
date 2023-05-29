@@ -123,7 +123,7 @@ class PdoSessionHandler extends BaseHandler
             $activity->setUser($user);
             $activity->setCategory($category);
             $activity->setIp($session->getIp());
-            $activity->setBrowser($session->getIp());
+            $activity->setBrowser($session->getBrowser());
             $activity->setSession($sessionId);
             $activity->setMode('test');
 

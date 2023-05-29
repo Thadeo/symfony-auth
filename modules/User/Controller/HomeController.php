@@ -9,6 +9,8 @@ class HomeController extends ModuleController{
 
     #[Route('/user', name: 'app_user_hello')]
     public function index() : Response {
-        return $this->moduleview('@Module/user', '/index.html.twig');
+        $data['file'] = __FILE__;
+
+        return $this->moduleview('@Module/user', '/index.html.twig', $data);
     }
 }

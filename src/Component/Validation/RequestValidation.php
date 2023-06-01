@@ -8,7 +8,7 @@ use App\Component\Exception\ValidationException;
  */
 class RequestValidation
 {
-    private $ruleKeys = ['required', 'numeric', 'string', 'amount', 'phone', 'email', 'min', 'max'];
+    private $ruleKeys = ['required', 'numeric', 'string', 'amount', 'min', 'max', 'phone', 'email', 'url'];
 
     /**
      * Intialize validate
@@ -17,8 +17,8 @@ class RequestValidation
      * @param array json rules command
      */
     public function validate(
-        array $requestData = [],
-        array $data = []
+        array $requestData = null,
+        array $data = null
     )
     {
         try {
@@ -59,13 +59,16 @@ class RequestValidation
                     }
                 }
 
+                // Clean request data
+                if(empty($errors)) $requestData[$requestKey] = VariableValidation::cleanInputData($requestValue);
+
             }//
 
             // Verify errors if exist
             if(!empty($errors)) throw new ValidationException('Error validation', $errors);
 
             // Return Response
-            return true;
+            return $requestData;
 
         } catch (ValidationException $th) {
             //throw $th
@@ -169,23 +172,33 @@ class RequestValidation
             }
 
             # Check string
-            if($ruleKey == 'string' && !VariableValidation::isString($requestValue)) {
+            if($ruleKey == 'string' && !empty($requestValue) && !VariableValidation::isString($requestValue)) {
                 $errors = "value must be a string";
             }
 
             # Check numeric
-            if($ruleKey == 'numeric' && !VariableValidation::isNumeric($requestValue)) {
+            if($ruleKey == 'numeric' && !empty($requestValue) && !VariableValidation::isNumeric($requestValue)) {
                 $errors = "value must be a numeric";
             }
 
             # Check amount
-            if($ruleKey == 'amount' && !VariableValidation::isAmount($requestValue)) {
+            if($ruleKey == 'amount' && !empty($requestValue) && !VariableValidation::isAmount($requestValue)) {
                 $errors = "value must be a valid amount formated eg. 20 or 20.00";
             }
 
-            # Check email address
-            if($ruleKey == 'email' && !VariableValidation::isEmailAddress($requestValue)) {
+            # Check phone
+            if($ruleKey == 'phone' && !empty($requestValue) && !VariableValidation::isPhone($requestValue)) {
+                $errors = "value must be a valid phone ";
+            }
+
+            # Check email
+            if($ruleKey == 'email' && !empty($requestValue) && !VariableValidation::isEmail($requestValue)) {
                 $errors = "value must be a valid email address ";
+            }
+
+            # Check url
+            if($ruleKey == 'url' && !empty($requestValue) && !VariableValidation::isUrl($requestValue)) {
+                $errors = "value must be a valid url";
             }
 
             # Check min, max

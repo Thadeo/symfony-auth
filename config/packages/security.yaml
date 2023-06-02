@@ -11,10 +11,6 @@ security:
                 class: App\Entity\User
                 property: email
     firewalls:
-        dev:
-            pattern: ^/(_(profiler|wdt)|css|images|js)/
-            security: false
-            
         # API AUTHENTICATE
         api_auth:
             pattern: ^/api/auth
@@ -23,12 +19,13 @@ security:
                 check_path: /api/auth
                 success_handler: lexik_jwt_authentication.handler.authentication_success
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure
-
         api:
             pattern:   ^/api
             stateless: true
             jwt: ~
-
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
         # MAIN AUTHENTICATE
         main:
             lazy: true

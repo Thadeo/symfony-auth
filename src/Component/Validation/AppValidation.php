@@ -2,13 +2,21 @@
 namespace App\Component\Validation;
 
 use App\Component\Exception\ValidationException;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
- * Request data validation
+ * Data validation
  */
-class RequestValidation
+class AppValidation
 {
     private $ruleKeys = ['required', 'numeric', 'string', 'amount', 'min', 'max', 'phone', 'email', 'url'];
+
+    public function __construct(
+        private TranslatorInterface $lang
+    )
+    {
+        $this->lang = $lang;
+    }
 
     /**
      * Intialize validate
@@ -26,7 +34,7 @@ class RequestValidation
             $errors = [];
             
             // Verify data
-            if(empty($data) || empty($requestData)) throw new ValidationException("post request data & data rules command must be in array, not empty");
+            if(empty($data) || empty($requestData)) throw new ValidationException($this->lang->trans('validation.data.empty'));
             
             // Request Data
             foreach ($requestData as $requestKey => $requestValue) {
@@ -37,7 +45,7 @@ class RequestValidation
                 // Verify rules is not empty
                 if($dataRules == null) {
                     // Key not exist
-                    $errors[$requestKey][] = "data key $requestKey not exist in rules command";
+                    $errors[$requestKey][] = $this->lang->trans('validation.data.key_not_exist', ['%key%' => $requestKey]);
                 }else {
 
                     # verify rules if is string then convert to array
@@ -46,7 +54,7 @@ class RequestValidation
                     // Verify rules if is array
                     if(!is_array($rulesArray)) {
                         # Add errors
-                        $errors[$requestKey][] = "Sorry rules value must be in array or string divided with | e.g required|string";
+                        $errors[$requestKey][] = $this->lang->trans('validation.rules.value_not_string_array');
                     
                     }else {
                         
@@ -65,7 +73,7 @@ class RequestValidation
             }//
 
             // Verify errors if exist
-            if(!empty($errors)) throw new ValidationException('Error validation', $errors);
+            if(!empty($errors)) throw new ValidationException($this->lang->trans('validation.errors'), $errors);
 
             // Return Response
             return $requestData;
@@ -122,7 +130,7 @@ class RequestValidation
                         if($validateRules instanceof ValidationException) $errors[] = $validateRules->getData()['errors'];
 
                     }else {
-                        $errors[] = "rule $ruleKey not exist, available rules is ".implode('|', $this->ruleKeys);
+                        $errors[] = $this->lang->trans('validation.rules.key_not_exist', ['%key%' => $ruleKey, '%rules%' => implode('|', $this->ruleKeys)]);
                     }
 
                 }else {
@@ -137,7 +145,7 @@ class RequestValidation
             }
 
             // Verify if errors has value
-            if(!empty($errors)) throw new ValidationException("Error validation request", $errors);
+            if(!empty($errors)) throw new ValidationException($this->lang->trans('validation.errors'), $errors);
 
             // Return Response
             return true;
@@ -168,37 +176,37 @@ class RequestValidation
 
             # Check required
             if($ruleKey == 'required' && empty($requestValue)) {
-                $errors = "value is required";
+                $errors = $this->lang->trans('validation.rule.value.required');
             }
 
             # Check string
             if($ruleKey == 'string' && !empty($requestValue) && !VariableValidation::isString($requestValue)) {
-                $errors = "value must be a string";
+                $errors = $this->lang->trans('validation.rule.value.string');
             }
 
             # Check numeric
             if($ruleKey == 'numeric' && !empty($requestValue) && !VariableValidation::isNumeric($requestValue)) {
-                $errors = "value must be a numeric";
+                $errors = $this->lang->trans('validation.rule.value.numeric');
             }
 
             # Check amount
             if($ruleKey == 'amount' && !empty($requestValue) && !VariableValidation::isAmount($requestValue)) {
-                $errors = "value must be a valid amount formated eg. 20 or 20.00";
+                $errors = $this->lang->trans('validation.rule.value.amount');
             }
 
             # Check phone
             if($ruleKey == 'phone' && !empty($requestValue) && !VariableValidation::isPhone($requestValue)) {
-                $errors = "value must be a valid phone ";
+                $errors = $this->lang->trans('validation.rule.value.phone');
             }
 
             # Check email
             if($ruleKey == 'email' && !empty($requestValue) && !VariableValidation::isEmail($requestValue)) {
-                $errors = "value must be a valid email address ";
+                $errors = $this->lang->trans('validation.rule.value.email');
             }
 
             # Check url
             if($ruleKey == 'url' && !empty($requestValue) && !VariableValidation::isUrl($requestValue)) {
-                $errors = "value must be a valid url";
+                $errors = $this->lang->trans('validation.rule.value.url');
             }
 
             # Check min, max
@@ -206,23 +214,23 @@ class RequestValidation
 
                 // Verify value if has value
                 if(empty($ruleValue) || empty($requestValue)) {
-                    $errors = "$ruleKey value is required";
+                    $errors = "$ruleKey ".$this->lang->trans('validation.rule.value.required');
                 }else{
                     // Verify min value
                     if(!VariableValidation::isMin($requestValue, $ruleValue) && $ruleKey == 'min') {
-                        $errors = "min value is $ruleValue";
+                        $errors = $this->lang->trans('validation.rule.value.min', ['%value%' => $ruleValue]);
                     }
 
                     // Verify max value
                     if(!VariableValidation::isMax($requestValue, $ruleValue) && $ruleKey == 'max') {
-                        $errors = "max value is $ruleValue";
+                        $errors = $this->lang->trans('validation.rule.value.max', ['%value%' => $ruleValue]);
                     }
                 }
             } ##
             
 
             // Verify if errors has value
-            if(!empty($errors)) throw new ValidationException("Error validation request", $errors);
+            if(!empty($errors)) throw new ValidationException($this->lang->trans('validation.errors'), $errors);
 
             // Return Response
             return true;

@@ -1,0 +1,14 @@
+validation.errors: Validation errors
+validation.data.empty: post request data & data rules command must be in array, not empty
+validation.data.key_not_exist: data key %key% not exist in rules command
+validation.rules.value_not_string_array: Sorry rules value must be in array or string divided with | e.g required|string
+validation.rules.key_not_exist: rule key %key% not exist, available rules is %rules%
+validation.rule.value.required: value is required
+validation.rule.value.string: value must be a string
+validation.rule.value.numeric: value must be a numeric
+validation.rule.value.amount: value must be a valid amount formated eg. 20 or 20.00
+validation.rule.value.phone: value must be a valid phone
+validation.rule.value.email: value must be a valid email address
+validation.rule.value.url: value must be a valid url
+validation.rule.value.min: min value is %value%
+validation.rule.value.max: max value is %value%

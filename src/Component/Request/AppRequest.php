@@ -1,7 +1,7 @@
 <?php
 namespace App\Component\Request;
 
-use App\Component\Validation\RequestValidation;
+use App\Component\Validation\AppValidation;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
@@ -17,7 +17,7 @@ class AppRequest
 
     public function __construct(
         RequestStack $request,
-        RequestValidation $validation
+        AppValidation $validation
     )
     {
         $this->request = $request;

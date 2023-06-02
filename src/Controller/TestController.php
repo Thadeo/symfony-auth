@@ -50,23 +50,16 @@ class TestController extends AbstractController
         $modules = $moduleService->listModules();
         return new Response(json_encode($modules), Response::HTTP_OK, ['Content-Type' => 'application/json']);
     }
-    
-    #[Route('/api/user', name: 'api_user')]
-    public function apiUser(
-        ModuleService $moduleService
-    ): Response
-    {
-        $modules = $moduleService->listModules();
-        return new Response(json_encode($modules), Response::HTTP_OK, ['Content-Type' => 'application/json']);
-    }
 
-    #[Route('/test/validate', name: 'app_test_validate')]
+    #[Route('/api/user', name: 'api_user')]
     public function testValidate(
         AppRequest $request
     ): Response
     {
         $validate = $request->validate([
-            'name' => 'url'
+            'name' => [
+                'max' => 10
+            ]
         ]);
         
         return new Response(json_encode($validate), Response::HTTP_OK, ['Content-Type' => 'application/json']);

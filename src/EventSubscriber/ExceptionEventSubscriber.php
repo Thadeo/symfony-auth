@@ -32,8 +32,8 @@ class ExceptionEventSubscriber implements EventSubscriberInterface
 
         // Custom path and show response
         if(in_array(str_replace('/', '', substr($request->getRequestUri(), 0, 4)), ['api'])) {
-            $response = new JsonResponse($responseData, $statusCode);
-            $event->setResponse($response);
+            //$response = new JsonResponse($responseData, $statusCode);
+            //$event->setResponse($response);
         }
     }
 

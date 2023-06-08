@@ -19,7 +19,7 @@ class SettingExtension extends AbstractExtension implements GlobalsInterface
     public function getGlobals():array
     {
         return [
-            'setting' => $this->setting->getAllSettingsValue()
+            'setting' => $this->setting->getAllValue()
         ];
     }
 }

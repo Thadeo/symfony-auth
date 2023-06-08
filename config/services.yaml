@@ -47,7 +47,7 @@ services:
     App\Service\ModuleService:
         arguments:
             $modulePath: '%kernel.project_dir%/modules/'
-            $uploadFileLimit: '10' # 10MB
+            $uploadFileLimit: '100' # 10MB
 
     # Twig Setting Extension
     App\Service\SettingService:

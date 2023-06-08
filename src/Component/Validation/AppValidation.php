@@ -21,12 +21,12 @@ class AppValidation
     /**
      * Intialize validate
      * 
-     * @param array json post request
-     * @param array json rules command
+     * @param array post request
+     * @param array rules command
      */
     public function validate(
         array $requestData = null,
-        array $data = null
+        array $ruleData = null
     )
     {
         try {
@@ -34,18 +34,18 @@ class AppValidation
             $errors = [];
             
             // Verify data
-            if(empty($data) || empty($requestData)) throw new ValidationException($this->lang->trans('validation.data.empty'));
+            if(empty($ruleData) || empty($requestData)) throw new ValidationException($this->lang->trans('validation.data.empty'));
             
             // Request Data
             foreach ($requestData as $requestKey => $requestValue) {
                 
                 // Hold Data rules
-                $dataRules = (empty($data[$requestKey])) ? null : $data[$requestKey];
+                $dataRules = (empty($ruleData[$requestKey])) ? null : $ruleData[$requestKey];
 
                 // Verify rules is not empty
                 if($dataRules == null) {
                     // Key not exist
-                    $errors[$requestKey][] = $this->lang->trans('validation.data.key_not_exist', ['%key%' => $requestKey]);
+                    //$errors[$requestKey][] = $this->lang->trans('validation.data.key_not_exist', ['%key%' => $requestKey]);
                 }else {
 
                     # verify rules if is string then convert to array
@@ -70,6 +70,12 @@ class AppValidation
                 // Clean request data
                 if(empty($errors)) $requestData[$requestKey] = VariableValidation::cleanInputData($requestValue);
 
+            }//
+
+            // Verify rules key if available in request Body
+            foreach ($ruleData as $rulekey => $rulevalue) {
+                # Key not exist
+                if(!array_key_exists($rulekey, $requestData)) $errors[$rulekey][] = $this->lang->trans('validation.data.key_not_exist', ['%key%' => $rulekey]);
             }//
 
             // Verify errors if exist
@@ -134,6 +140,7 @@ class AppValidation
                     }
 
                 }else {
+
                     // Continue to verify
                     $validateRules = $this->validateRules($requestValue, $ruleKey, $ruleValue);
 

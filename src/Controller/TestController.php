@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Component\Request\AppRequest;
+use App\Service\AuthService;
 use App\Service\ModuleService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -53,15 +54,45 @@ class TestController extends AbstractController
 
     #[Route('/api/user', name: 'api_user')]
     public function testValidate(
-        AppRequest $request
+        AppRequest $request,
+        AuthService $auth
     ): Response
     {
         $validate = $request->validate([
-            'name' => [
-                'max' => 10
-            ]
+            'country_code' => 'required|string',
+            'first_name' => 'required|string',
+            'middle_name' => 'required|string',
+            'last_name' => 'required|string',
+            'email' => 'required|email',
+            'password' => 'required|string'
         ]);
+
+        // Verify Validation
+        if(!empty($validate['errors'])) return new Response(json_encode($validate), Response::HTTP_BAD_REQUEST, ['Content-Type' => 'application/json']);
         
-        return new Response(json_encode($validate), Response::HTTP_OK, ['Content-Type' => 'application/json']);
+        // Register User
+        $register = $auth->registerUser(true,
+                        $validate['country_code'],
+                        $validate['first_name'],
+                        $validate['middle_name'],
+                        $validate['last_name'],
+                        $validate['email'],
+                        $validate['password']);
+        // Return Response
+        return new Response(json_encode($register), Response::HTTP_OK, ['Content-Type' => 'application/json']);
+    }
+
+    #[Route('/api/test/factor', name: 'api_auth_factor')]
+    public function testAuth(
+        AuthService $auth
+    ): Response
+    {
+        $user = $this->getUser();
+
+        // Auth
+        $authUser = $auth->factorAuth($user, 'auth_register');
+
+        // Return Response
+        return new Response(json_encode($authUser), Response::HTTP_OK, ['Content-Type' => 'application/json']);
     }
 }

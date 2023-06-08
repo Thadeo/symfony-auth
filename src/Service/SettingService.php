@@ -16,11 +16,11 @@ class SettingService
     }
 
     /**
-     * Get all Settings Value
+     * Get all Value
      * 
      * @return array
      */
-    public function getAllSettingsValue()
+    public function getAllValue()
     {
         // Hold array
         $data = [];
@@ -40,12 +40,12 @@ class SettingService
     }
 
     /**
-     * Get Setting Value by Key
+     * Get Value by Key
      * 
      * @param string key
      * @return ?string
      */
-    public function getSettingValueByKey(string $key)
+    public function getValueByKey(string $key)
     {
         // Find Setting
         $setting = $this->entityManager->getRepository(Settings::class)->findOneBy(['code' => $key]);

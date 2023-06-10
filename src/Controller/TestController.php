@@ -52,47 +52,20 @@ class TestController extends AbstractController
         return new Response(json_encode($modules), Response::HTTP_OK, ['Content-Type' => 'application/json']);
     }
 
-    #[Route('/api/user', name: 'api_user')]
+    #[Route('/test/validate', name: 'api_test_validate')]
     public function testValidate(
-        AppRequest $request,
-        AuthService $auth
+        AppRequest $request
     ): Response
     {
         $validate = $request->validate([
-            'country_code' => 'required|string',
-            'first_name' => 'required|string',
-            'middle_name' => 'required|string',
-            'last_name' => 'required|string',
-            'email' => 'required|email',
-            'password' => 'required|string'
+            'name' => 'required|string',
+            'good' => 'required|string'
         ]);
 
         // Verify Validation
         if(!empty($validate['errors'])) return new Response(json_encode($validate), Response::HTTP_BAD_REQUEST, ['Content-Type' => 'application/json']);
         
-        // Register User
-        $register = $auth->registerUser(true,
-                        $validate['country_code'],
-                        $validate['first_name'],
-                        $validate['middle_name'],
-                        $validate['last_name'],
-                        $validate['email'],
-                        $validate['password']);
         // Return Response
-        return new Response(json_encode($register), Response::HTTP_OK, ['Content-Type' => 'application/json']);
-    }
-
-    #[Route('/api/test/factor', name: 'api_auth_factor')]
-    public function testAuth(
-        AuthService $auth
-    ): Response
-    {
-        $user = $this->getUser();
-
-        // Auth
-        $authUser = $auth->factorAuth($user, 'auth_register');
-
-        // Return Response
-        return new Response(json_encode($authUser), Response::HTTP_OK, ['Content-Type' => 'application/json']);
+        return new Response(json_encode($validate), Response::HTTP_OK, ['Content-Type' => 'application/json']);
     }
 }

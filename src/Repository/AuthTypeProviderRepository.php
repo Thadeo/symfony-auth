@@ -103,9 +103,9 @@ class AuthTypeProviderRepository extends ServiceEntityRepository
         $query->setMaxResults(1);
 
         // Query Result
-        $query->getQuery()->getOneOrNullResult();
+        $result = $query->getQuery()->getOneOrNullResult();
 
         // Return Result
-        return $query;
+        return $result;
     }
 }

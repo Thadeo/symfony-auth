@@ -3,6 +3,8 @@ namespace App\Service;
 
 use App\Component\Util\EntityUtil;
 use App\Component\Util\ResponseUtil;
+use App\Entity\AuthType;
+use App\Entity\AuthVerify;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -169,17 +171,22 @@ class AuthService
 
         } catch (\Exception $th) {
             //throw $th;
-            return ResponseUtil::response($jsonResponse, $th, 400, null, 'Authentication Failed '.$th->getMessage());
+            return ResponseUtil::response($jsonResponse, $th, 400, null, $th->getMessage());
         }
     }
 
     /**
      * 2-Factor Authentication
      * 
+     * Get all available auth type
+     * it uses for selection of auth in web, api
+     * 
      * @param User user
      * @param string auth
+     * 
+     * @return array
      */
-    public function factorAuth(
+    public function factorAllTypeAuth(
         User $user,
         string $auth
     )
@@ -200,10 +207,10 @@ class AuthService
                 if($type->getActive() == false) continue;
 
                 // Find Primary Provider
-                $provider = EntityUtil::findPrimaryAuthTypeProvider($this->lang, $this->entityManager, $auth);
+                $provider = EntityUtil::findPrimaryAuthTypeProvider($this->lang, $this->entityManager, $type->getCode());
 
                 // Exception
-                if($provider instanceof \Exception) throw new \Exception($provider->getMessage());
+                if($provider instanceof \Exception) continue;
 
                 // Add Authentication
                 $authTypes['auth'][] = [
@@ -216,17 +223,169 @@ class AuthService
             }
 
             // Empty Auth Type
-            if(empty($authTypes['auth'])) throw new \Exception("Authentication not active");
+            if(empty($authTypes['auth'])) throw new \Exception($this->lang->trans('auth.not_active'));
 
             // Set Auth true
             $authTypes['2factor'] = true;
 
             // Return Response
-            return ResponseUtil::response(true, $authentication, 200, $authTypes, '2-factor authenticate required');
+            return ResponseUtil::response(true, $authentication, 200, $authTypes, $this->lang->trans('auth.required'));
             
         } catch (\Exception $th) {
             //throw $th;
             return ResponseUtil::response(true, $th, 400, $authTypes, $th->getMessage());
+        }
+    }
+
+    /**
+     * 2-Factor Authentication
+     * 
+     * Submit Auth Submission
+     * 
+     * @param User user
+     * @param string authType
+     * 
+     * @return array
+     */
+    public function factorAuthSubmit(
+        User $user,
+        string $authType
+    )
+    {
+        // Hold Response
+        $response = ['2factor' => true];
+
+        try {
+            
+            // Find Auth
+            $auth = EntityUtil::findOneAuthType($this->lang, $this->entityManager, $authType, true);
+
+            // Exception
+            if($auth instanceof \Exception) throw new \Exception($auth->getMessage());
+            
+            // Verify Type
+            switch ($auth->getVerifyType()) {
+                case 'token':
+                    $addUpdate = $this->factorAddUpdateAuthVerify($auth, $user);
+                    break;
+                
+                default:
+                    throw new \Exception("Authentication not available, try again later");
+                    break;
+            }
+
+            // Exception
+            if($addUpdate instanceof \Exception) throw new \Exception($addUpdate->getMessage());
+            
+            // Send Notification
+
+            // Return Response
+            return ResponseUtil::response(true, $addUpdate, 200, $response, $this->lang->trans('auth.confirm_token'));
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return ResponseUtil::response(true, $th, 400, null, $th->getMessage());
+        }
+    }
+
+    /**
+     * 2-Factor Authentication
+     * 
+     * Verify Auth Submission
+     * 
+     * @param User user
+     * @param string authType
+     * @param string token
+     * 
+     * @return array
+     */
+    public function factorAuthConfirmSubmit(
+        User $user,
+        string $authType,
+        string $token
+    )
+    {
+        // Hold Response
+        $response = ['2factor' => true];
+
+        try {
+            
+            // Find Auth
+            $auth = EntityUtil::findOneAuthVerify($this->lang, $this->entityManager, $authType, $token, $_SERVER['HTTP_USER_AGENT'], true);
+
+            // Exception
+            if($auth instanceof \Exception) throw new \Exception($auth->getMessage());
+            
+            // Remove Auth Verify
+            $this->entityManager->remove($auth);
+            $this->entityManager->flush();
+            
+            // Send Notification
+
+            // Return Response
+            return ResponseUtil::response(true, $user, 200, $response, $this->lang->trans('auth.success'));
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return ResponseUtil::response(true, $th, 400, null, $th->getMessage());
+        }
+    }
+
+    /**
+     * 2-Factor Authentication
+     * 
+     * Add & Update Verification
+     * 
+     * @param AuthType auth
+     * @param User user
+     * 
+     * @return AuthVerify
+     */
+    public function factorAddUpdateAuthVerify(
+        AuthType $authType,
+        User $user,
+    )
+    {
+        try {
+            
+            // Find Verify
+            $verify = EntityUtil::findOneAuthVerify($this->lang, $this->entityManager, $authType->getCode(), null, $_SERVER['HTTP_USER_AGENT'], true);
+
+            // Verify Exist
+            if(!$verify instanceof \Exception) {
+                
+                // Update Verify
+                $verify->setActive(true);
+                $verify->setToken(time());
+
+                // Flush changes
+                $this->entityManager->flush();
+
+                // Return Verify
+                return $verify;
+            }
+
+            // Prepaire Auth Verify
+            $verify = new AuthVerify();
+
+            // Prepaire Data
+            $verify->setDate(new \DateTime());
+            $verify->setAuthType($authType);
+            $verify->setUser($user);
+            $verify->setToken(time());
+            $verify->setDevice($_SERVER['HTTP_USER_AGENT']);
+            $verify->setActive(true);
+
+            // Add Data & Flush changes
+            $this->entityManager->persist($verify);
+            $this->entityManager->flush();
+
+            // Return Auth Verify
+            return $verify;
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return $th;
         }
     }
 }

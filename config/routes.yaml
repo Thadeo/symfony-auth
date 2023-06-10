@@ -6,7 +6,7 @@ controllers:
 
 # API Authenticator
 api_auth:
-    path: /api/auth
+    path: /api/auth/token
 
 # Handle Module Router
 module_controllers:

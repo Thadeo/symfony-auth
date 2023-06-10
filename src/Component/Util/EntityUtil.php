@@ -4,6 +4,7 @@ namespace App\Component\Util;
 use App\Entity\Auth;
 use App\Entity\AuthType;
 use App\Entity\AuthTypeProvider;
+use App\Entity\AuthVerify;
 use App\Entity\Country;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
@@ -181,6 +182,46 @@ class EntityUtil
 
             // Return Auth Type
             return $authType;
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return $th;
+        }
+    }
+
+    /**
+     * Find One Authentication Verify
+     * 
+     * @param TranslatorInterface lang
+     * @param EntityManagerInterface entitymanager
+     * @param string auth
+     * @param ?string token
+     * @param ?string device
+     * @param ?bool active
+     * 
+     * @return AuthVerify
+     */
+    public static function findOneAuthVerify(
+        TranslatorInterface $lang,
+        EntityManagerInterface $entityManager,
+        string $auth,
+        string $token = null,
+        string $device = null,
+        bool $active = null
+    )
+    {
+        try {
+            // Find Auth Verify
+            $authVerify = $entityManager->getRepository(AuthVerify::class)->findOneVerify($auth, $token, $device, $active);
+
+            // Auth Verify not exist
+            if(!$authVerify) throw new \Exception(($token) ? "Token $token not valid" : "Auth $auth not exist");
+
+            // Verify if is active
+            if($active && !$authVerify->getActive()) throw new \Exception("You have already verify");
+
+            // Return Auth Verify
+            return $authVerify;
 
         } catch (\Exception $th) {
             //throw $th;

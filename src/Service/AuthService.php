@@ -2,6 +2,7 @@
 namespace App\Service;
 
 use App\Component\Util\EntityUtil;
+use App\Component\Util\GenerateUtil;
 use App\Component\Util\ResponseUtil;
 use App\Entity\AuthType;
 use App\Entity\AuthVerify;
@@ -94,15 +95,12 @@ class AuthService
             $user->setEmail($email);
             $user->setPassword($passwordHash);
             $user->setIsVerified(false);
+            $user->setAuthFactorRegister(($this->setting->getValueByKey('auth_register') == 1) ? true : false);
+            $user->setAuthFactorLogin(($this->setting->getValueByKey('auth_login') == 1) ? true : false);
 
             // Add User & Flush changes
             $this->entityManager->persist($user);
             $this->entityManager->flush();
-
-            // Authentication
-            if($this->setting->getValueByKey('auth_register') == 1) {
-                // Authenticate
-            }
 
             // Return User
             return ResponseUtil::response($jsonResponse, $user, 200, ['user' => $user->getFullName(), 'email' => $user->getEmail()], $this->lang->trans('auth.signup.success'));
@@ -319,6 +317,12 @@ class AuthService
             // Remove Auth Verify
             $this->entityManager->remove($auth);
             $this->entityManager->flush();
+
+            // Update User
+            if($auth->getAuthType()->getAuth()->getCode() == 'auth_register') {
+                $user->setAuthFactorRegister(false);
+                $this->entityManager->flush();
+            }
             
             // Send Notification
 
@@ -356,7 +360,7 @@ class AuthService
                 
                 // Update Verify
                 $verify->setActive(true);
-                $verify->setToken(time());
+                $verify->setToken(GenerateUtil::number(6));
 
                 // Flush changes
                 $this->entityManager->flush();
@@ -372,7 +376,7 @@ class AuthService
             $verify->setDate(new \DateTime());
             $verify->setAuthType($authType);
             $verify->setUser($user);
-            $verify->setToken(time());
+            $verify->setToken(GenerateUtil::number(6));
             $verify->setDevice($_SERVER['HTTP_USER_AGENT']);
             $verify->setActive(true);
 

@@ -74,12 +74,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: UserActivity::class)]
     private Collection $userActivities;
 
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: UserSettings::class)]
+    private Collection $settings;
+
+    #[ORM\Column]
+    private ?bool $authFactorRegister = null;
+
+    #[ORM\Column]
+    private ?bool $authFactorLogin = null;
+
     public function __construct()
     {
         $this->userPhones = new ArrayCollection();
         $this->userAddresses = new ArrayCollection();
         $this->sessions = new ArrayCollection();
         $this->userActivities = new ArrayCollection();
+        $this->settings = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -415,6 +425,60 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $userActivity->setUser(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, UserSettings>
+     */
+    public function getSettings(): Collection
+    {
+        return $this->settings;
+    }
+
+    public function addSetting(UserSettings $setting): self
+    {
+        if (!$this->settings->contains($setting)) {
+            $this->settings->add($setting);
+            $setting->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSetting(UserSettings $setting): self
+    {
+        if ($this->settings->removeElement($setting)) {
+            // set the owning side to null (unless already changed)
+            if ($setting->getUser() === $this) {
+                $setting->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function isAuthFactorRegister(): ?bool
+    {
+        return $this->authFactorRegister;
+    }
+
+    public function setAuthFactorRegister(bool $authFactorRegister): self
+    {
+        $this->authFactorRegister = $authFactorRegister;
+
+        return $this;
+    }
+
+    public function isAuthFactorLogin(): ?bool
+    {
+        return $this->authFactorLogin;
+    }
+
+    public function setAuthFactorLogin(bool $authFactorLogin): self
+    {
+        $this->authFactorLogin = $authFactorLogin;
 
         return $this;
     }

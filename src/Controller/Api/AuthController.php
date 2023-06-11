@@ -15,7 +15,7 @@ class AuthController extends AbstractController
      * 
      * User Registration
      */
-    #[Route('/api/auth/register', name: 'api_auth_register')]
+    #[Route('/api/auth/register', name: 'api_auth_register', methods: ['POST'])]
     public function register(
         AppRequest $request,
         AuthService $auth
@@ -31,7 +31,7 @@ class AuthController extends AbstractController
         ]);
 
         // Verify Validation
-        if(!empty($validate['errors'])) return new Response(json_encode($validate), Response::HTTP_BAD_REQUEST, ['Content-Type' => 'application/json']);
+        if(!empty($validate['errors'])) return $this->json($validate, 400);;
         
         // Register User
         $register = $auth->registerUser(true,
@@ -51,15 +51,24 @@ class AuthController extends AbstractController
      * List all auth type such as
      * email, sms and e.t.c
      */
-    #[Route('/api/auth/factor', name: 'api_auth_factor')]
+    #[Route('/api/auth/factor', name: 'api_auth_factor', methods: ['POST'])]
     public function factor(
+        AppRequest $request,
         AuthService $auth
     ): Response
     {
         $user = $this->getUser();
 
+        // Validate Rules
+        $validate = $request->validate([
+            'auth' => 'required|string'
+        ]);
+
+        // Verify Validation
+        if(!empty($validate['errors'])) return $this->json($validate, 400);
+
         // Auth
-        $authUser = $auth->factorAllTypeAuth($user, 'auth_register');
+        $authUser = $auth->factorAllTypeAuth($user, $validate['auth']);
 
         // Return Response
         return $this->json($authUser, $authUser['status']);
@@ -70,7 +79,7 @@ class AuthController extends AbstractController
      * 
      * Submit data for authenticate 
      */
-    #[Route('/api/auth/factor/submit', name: 'api_auth_factor_submit')]
+    #[Route('/api/auth/factor/submit', name: 'api_auth_factor_submit', methods: ['POST'])]
     public function factorAuthSubmit(
         AppRequest $request,
         AuthService $auth
@@ -84,13 +93,13 @@ class AuthController extends AbstractController
         ]);
 
         // Verify Validation
-        if(!empty($validate['errors'])) return new Response(json_encode($validate), Response::HTTP_BAD_REQUEST, ['Content-Type' => 'application/json']);
+        if(!empty($validate['errors'])) return $this->json($validate, 400);
         
         // Auth
         $authUser = $auth->factorAuthSubmit($user, $validate['auth_type']);
 
         // Return Response
-        return new Response(json_encode($authUser), Response::HTTP_OK, ['Content-Type' => 'application/json']);
+        return $this->json($authUser, $authUser['status']);
     }
 
     /**
@@ -98,7 +107,7 @@ class AuthController extends AbstractController
      * 
      * Confirm Authentication submitted
      */
-    #[Route('/api/auth/factor/confirm', name: 'api_auth_factor_confirm')]
+    #[Route('/api/auth/factor/confirm', name: 'api_auth_factor_confirm', methods: ['POST'])]
     public function factorAuthConfirm(
         AppRequest $request,
         AuthService $auth
@@ -113,12 +122,12 @@ class AuthController extends AbstractController
         ]);
 
         // Verify Validation
-        if(!empty($validate['errors'])) return new Response(json_encode($validate), Response::HTTP_BAD_REQUEST, ['Content-Type' => 'application/json']);
+        if(!empty($validate['errors'])) return $this->json($validate, 400);
         
         // Auth
         $authUser = $auth->factorAuthConfirmSubmit($user, $validate['auth_type'], $validate['token']);
 
         // Return Response
-        return new Response(json_encode($authUser), Response::HTTP_OK, ['Content-Type' => 'application/json']);
+        return $this->json($authUser, $authUser['status']);
     }
 }

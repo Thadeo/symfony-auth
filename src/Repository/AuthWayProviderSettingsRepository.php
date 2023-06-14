@@ -2,26 +2,26 @@
 
 namespace App\Repository;
 
-use App\Entity\AuthTypeProviderSettings;
+use App\Entity\AuthWayProviderSettings;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<AuthTypeProviderSettings>
+ * @extends ServiceEntityRepository<AuthWayProviderSettings>
  *
- * @method AuthTypeProviderSettings|null find($id, $lockMode = null, $lockVersion = null)
- * @method AuthTypeProviderSettings|null findOneBy(array $criteria, array $orderBy = null)
- * @method AuthTypeProviderSettings[]    findAll()
- * @method AuthTypeProviderSettings[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method AuthWayProviderSettings|null find($id, $lockMode = null, $lockVersion = null)
+ * @method AuthWayProviderSettings|null findOneBy(array $criteria, array $orderBy = null)
+ * @method AuthWayProviderSettings[]    findAll()
+ * @method AuthWayProviderSettings[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class AuthTypeProviderSettingsRepository extends ServiceEntityRepository
+class AuthWayProviderSettingsRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, AuthTypeProviderSettings::class);
+        parent::__construct($registry, AuthWayProviderSettings::class);
     }
 
-    public function save(AuthTypeProviderSettings $entity, bool $flush = false): void
+    public function save(AuthWayProviderSettings $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);
 
@@ -30,7 +30,7 @@ class AuthTypeProviderSettingsRepository extends ServiceEntityRepository
         }
     }
 
-    public function remove(AuthTypeProviderSettings $entity, bool $flush = false): void
+    public function remove(AuthWayProviderSettings $entity, bool $flush = false): void
     {
         $this->getEntityManager()->remove($entity);
 
@@ -40,7 +40,7 @@ class AuthTypeProviderSettingsRepository extends ServiceEntityRepository
     }
 
 //    /**
-//     * @return AuthTypeProviderSettings[] Returns an array of AuthTypeProviderSettings objects
+//     * @return AuthWayProviderSettings[] Returns an array of AuthWayProviderSettings objects
 //     */
 //    public function findByExampleField($value): array
 //    {
@@ -54,7 +54,7 @@ class AuthTypeProviderSettingsRepository extends ServiceEntityRepository
 //        ;
 //    }
 
-//    public function findOneBySomeField($value): ?AuthTypeProviderSettings
+//    public function findOneBySomeField($value): ?AuthWayProviderSettings
 //    {
 //        return $this->createQueryBuilder('a')
 //            ->andWhere('a.exampleField = :val')

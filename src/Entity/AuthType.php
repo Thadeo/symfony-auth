@@ -3,8 +3,6 @@
 namespace App\Entity;
 
 use App\Repository\AuthTypeRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -22,34 +20,17 @@ class AuthType
     #[ORM\ManyToOne(inversedBy: 'types')]
     private ?Auth $auth = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $name = null;
-
-    #[ORM\Column(length: 255)]
-    private ?string $code = null;
-
-    #[ORM\Column(length: 255)]
-    private ?string $verifyType = null;
-
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $shortDesc = null;
-
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $longDesc = null;
+    #[ORM\ManyToOne]
+    private ?AuthWay $authWay = null;
 
     #[ORM\Column]
     private ?bool $active = null;
 
+    #[ORM\Column(length: 255)]
+    private ?string $identifier = null;
+
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $updatedDate = null;
-
-    #[ORM\OneToMany(mappedBy: 'type', targetEntity: AuthTypeProvider::class)]
-    private Collection $provider;
-
-    public function __construct()
-    {
-        $this->provider = new ArrayCollection();
-    }
 
     public function getId(): ?int
     {
@@ -80,62 +61,14 @@ class AuthType
         return $this;
     }
 
-    public function getName(): ?string
+    public function getAuthWay(): ?AuthWay
     {
-        return $this->name;
+        return $this->authWay;
     }
 
-    public function setName(string $name): self
+    public function setAuthWay(?AuthWay $authWay): self
     {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    public function getCode(): ?string
-    {
-        return $this->code;
-    }
-
-    public function setCode(string $code): self
-    {
-        $this->code = $code;
-
-        return $this;
-    }
-
-    public function getVerifyType(): ?string
-    {
-        return $this->verifyType;
-    }
-
-    public function setVerifyType(string $verifyType): self
-    {
-        $this->verifyType = $verifyType;
-
-        return $this;
-    }
-
-    public function getShortDesc(): ?string
-    {
-        return $this->shortDesc;
-    }
-
-    public function setShortDesc(?string $shortDesc): self
-    {
-        $this->shortDesc = $shortDesc;
-
-        return $this;
-    }
-
-    public function getLongDesc(): ?string
-    {
-        return $this->longDesc;
-    }
-
-    public function setLongDesc(?string $longDesc): self
-    {
-        $this->longDesc = $longDesc;
+        $this->authWay = $authWay;
 
         return $this;
     }
@@ -152,6 +85,18 @@ class AuthType
         return $this;
     }
 
+    public function getIdentifier(): ?string
+    {
+        return $this->identifier;
+    }
+
+    public function setIdentifier(string $identifier): self
+    {
+        $this->identifier = $identifier;
+
+        return $this;
+    }
+
     public function getUpdatedDate(): ?\DateTimeInterface
     {
         return $this->updatedDate;
@@ -160,36 +105,6 @@ class AuthType
     public function setUpdatedDate(\DateTimeInterface $updatedDate): self
     {
         $this->updatedDate = $updatedDate;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, AuthTypeProvider>
-     */
-    public function getProvider(): Collection
-    {
-        return $this->provider;
-    }
-
-    public function addProvider(AuthTypeProvider $provider): self
-    {
-        if (!$this->provider->contains($provider)) {
-            $this->provider->add($provider);
-            $provider->setType($this);
-        }
-
-        return $this;
-    }
-
-    public function removeProvider(AuthTypeProvider $provider): self
-    {
-        if ($this->provider->removeElement($provider)) {
-            // set the owning side to null (unless already changed)
-            if ($provider->getType() === $this) {
-                $provider->setType(null);
-            }
-        }
 
         return $this;
     }

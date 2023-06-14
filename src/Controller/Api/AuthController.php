@@ -89,14 +89,14 @@ class AuthController extends AbstractController
 
         // Validate Rules
         $validate = $request->validate([
-            'auth_type' => 'required|string'
+            'identifier' => 'required|string'
         ]);
 
         // Verify Validation
         if(!empty($validate['errors'])) return $this->json($validate, 400);
         
         // Auth
-        $authUser = $auth->factorAuthSubmit($user, $validate['auth_type']);
+        $authUser = $auth->factorAuthSubmit(true, $user, null, $validate['identifier']);
 
         // Return Response
         return $this->json($authUser, $authUser['status']);
@@ -117,7 +117,7 @@ class AuthController extends AbstractController
 
         // Validate Rules
         $validate = $request->validate([
-            'auth_type' => 'required|string',
+            'identifier' => 'required|string',
             'token' => 'required|string'
         ]);
 
@@ -125,7 +125,93 @@ class AuthController extends AbstractController
         if(!empty($validate['errors'])) return $this->json($validate, 400);
         
         // Auth
-        $authUser = $auth->factorAuthConfirmSubmit($user, $validate['auth_type'], $validate['token']);
+        $authUser = $auth->factorAuthConfirmSubmit($user, $validate['identifier'], $validate['token']);
+
+        // Return Response
+        return $this->json($authUser, $authUser['status']);
+    }
+
+    /**
+     * Forget Password
+     * 
+     * Submit forget
+     */
+    #[Route('/api/auth/forget/password', name: 'api_auth_forget_password', methods: ['POST'])]
+    public function forgetPassword(
+        AppRequest $request,
+        AuthService $auth
+    ): Response
+    {
+
+        // Validate Rules
+        $validate = $request->validate([
+            'email' => 'required|email',
+            'identifier' => 'required|string',
+            'token' => 'required|string',
+            'password' => 'required|string'
+        ]);
+
+        // Verify Validation
+        if(!empty($validate['errors'])) return $this->json($validate, 400);
+
+        // Auth
+        $authUser = $auth->forgetUserPassword(true, $validate['email'], $validate['identifier'], $validate['token'], $validate['password']);
+
+        // Return Response
+        return $this->json($authUser, $authUser['status']);
+    }
+
+    /**
+     * Password Forget 2-Factor
+     * 
+     * List all auth type such as
+     * email, sms and e.t.c
+     */
+    #[Route('/api/auth/forget/password/factor', name: 'api_auth_forget_password_factor', methods: ['POST'])]
+    public function forgetPasswordFactor(
+        AppRequest $request,
+        AuthService $auth
+    ): Response
+    {
+
+        // Validate Rules
+        $validate = $request->validate([
+            'email' => 'required|email'
+        ]);
+
+        // Verify Validation
+        if(!empty($validate['errors'])) return $this->json($validate, 400);
+        
+        // Auth
+        $authUser = $auth->forgetUserPasswordFactor(true, $validate['email']);
+
+        // Return Response
+        return $this->json($authUser, $authUser['status']);
+    }
+
+    /**
+     * Forget Password 2-Factor Submit
+     * 
+     * Submit data for authenticate 
+     */
+    #[Route('/api/auth/forget/password/factor/submit', name: 'api_auth_forget_password_factor_submit', methods: ['POST'])]
+    public function forgetPasswordFactorSubmit(
+        AppRequest $request,
+        AuthService $auth
+    ): Response
+    {
+
+        // Validate Rules
+        $validate = $request->validate([
+            'identifier' => 'required|string',
+            'email' => 'required|email'
+        ]);
+
+        // Verify Validation
+        if(!empty($validate['errors'])) return $this->json($validate, 400);
+        
+        // Auth
+        $authUser = $auth->forgetUserPasswordFactorSubmit(true, $validate['identifier'], $validate['email']);
 
         // Return Response
         return $this->json($authUser, $authUser['status']);

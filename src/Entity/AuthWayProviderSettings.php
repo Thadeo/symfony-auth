@@ -2,23 +2,20 @@
 
 namespace App\Entity;
 
-use App\Repository\AuthTypeProviderSettingsRepository;
+use App\Repository\AuthWayProviderSettingsRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: AuthTypeProviderSettingsRepository::class)]
-class AuthTypeProviderSettings
+#[ORM\Entity(repositoryClass: AuthWayProviderSettingsRepository::class)]
+class AuthWayProviderSettings
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $date = null;
-
     #[ORM\ManyToOne(inversedBy: 'settings')]
-    private ?AuthTypeProvider $provider = null;
+    private ?AuthWayProvider $provider = null;
 
     #[ORM\Column(length: 255)]
     private ?string $name = null;
@@ -38,29 +35,20 @@ class AuthTypeProviderSettings
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $updatedDate = null;
 
+    #[ORM\Column(length: 255)]
+    private ?string $identifier = null;
+
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getDate(): ?\DateTimeInterface
-    {
-        return $this->date;
-    }
-
-    public function setDate(\DateTimeInterface $date): self
-    {
-        $this->date = $date;
-
-        return $this;
-    }
-
-    public function getProvider(): ?AuthTypeProvider
+    public function getProvider(): ?AuthWayProvider
     {
         return $this->provider;
     }
 
-    public function setProvider(?AuthTypeProvider $provider): self
+    public function setProvider(?AuthWayProvider $provider): self
     {
         $this->provider = $provider;
 
@@ -123,6 +111,18 @@ class AuthTypeProviderSettings
     public function setLongDesc(?string $longDesc): self
     {
         $this->longDesc = $longDesc;
+
+        return $this;
+    }
+
+    public function getIdentifier(): ?string
+    {
+        return $this->identifier;
+    }
+
+    public function setIdentifier(string $identifier): self
+    {
+        $this->identifier = $identifier;
 
         return $this;
     }

@@ -2,28 +2,27 @@
 
 namespace App\Repository;
 
-use App\Entity\Auth;
-use App\Entity\AuthType;
-use App\Entity\AuthTypeProvider;
+use App\Entity\AuthWay;
+use App\Entity\AuthWayProvider;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<AuthTypeProvider>
+ * @extends ServiceEntityRepository<AuthWayProvider>
  *
- * @method AuthTypeProvider|null find($id, $lockMode = null, $lockVersion = null)
- * @method AuthTypeProvider|null findOneBy(array $criteria, array $orderBy = null)
- * @method AuthTypeProvider[]    findAll()
- * @method AuthTypeProvider[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method AuthWayProvider|null find($id, $lockMode = null, $lockVersion = null)
+ * @method AuthWayProvider|null findOneBy(array $criteria, array $orderBy = null)
+ * @method AuthWayProvider[]    findAll()
+ * @method AuthWayProvider[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class AuthTypeProviderRepository extends ServiceEntityRepository
+class AuthWayProviderRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, AuthTypeProvider::class);
+        parent::__construct($registry, AuthWayProvider::class);
     }
 
-    public function save(AuthTypeProvider $entity, bool $flush = false): void
+    public function save(AuthWayProvider $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);
 
@@ -32,7 +31,7 @@ class AuthTypeProviderRepository extends ServiceEntityRepository
         }
     }
 
-    public function remove(AuthTypeProvider $entity, bool $flush = false): void
+    public function remove(AuthWayProvider $entity, bool $flush = false): void
     {
         $this->getEntityManager()->remove($entity);
 
@@ -46,7 +45,7 @@ class AuthTypeProviderRepository extends ServiceEntityRepository
      * 
      * @param string auth
      */
-    public function findAllProvider(
+    /*public function findAllProvider(
         string $auth,
         bool $active = null
     )
@@ -66,26 +65,26 @@ class AuthTypeProviderRepository extends ServiceEntityRepository
 
         // Return Result
         return $query;
-    }
+    }*/
 
     /**
      * Find One Provider
      * 
-     * @param string auth
+     * @param string identifier
      * @param bool isPrimary
      * @param bool active
      */
     public function findOneProvider(
-        string $auth,
+        string $identifier,
         bool $isPrimary = null,
         bool $active = null
     )
     {
         $query = $this->createQueryBuilder('a')->select('DISTINCT a')
-            ->leftJoin(AuthType::class, 'au', 
-            \Doctrine\ORM\Query\Expr\Join::WITH, 'a.type = au.id')
-            ->andWhere('au.code = :code')
-            ->setParameter('code', $auth);
+            ->join(AuthWay::class, 'aw', 
+            \Doctrine\ORM\Query\Expr\Join::WITH, 'a.way = aw.id')
+            ->andWhere('aw.identifier = :identifier')
+            ->setParameter('identifier', $identifier);
 
         // Find primary
         if($isPrimary || $isPrimary == false) {

@@ -17,7 +17,9 @@ validation.rule.value.max: max value is %value%
 # AUTHENTICATION
 auth.signup.success: Registration Successful
 auth.password_verify: Password must have atlist one lowercase, one uppercase, number and characters must be more than 8 in long
+auth.password_reset.success: Password reset successful, you can try to login
 auth.required: 2-factor authenticate required
 auth.not_active: Authentication not active
+auth.not_valid: Authentication not valid
 auth.confirm_token: Kind check your auth type you select and verify a token
 auth.success: Authentication successful

@@ -2,14 +2,14 @@
 
 namespace App\Entity;
 
-use App\Repository\AuthTypeProviderRepository;
+use App\Repository\AuthWayProviderRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: AuthTypeProviderRepository::class)]
-class AuthTypeProvider
+#[ORM\Entity(repositoryClass: AuthWayProviderRepository::class)]
+class AuthWayProvider
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -19,8 +19,8 @@ class AuthTypeProvider
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $date = null;
 
-    #[ORM\ManyToOne(inversedBy: 'provider')]
-    private ?AuthType $type = null;
+    #[ORM\ManyToOne(inversedBy: 'providers')]
+    private ?AuthWay $way = null;
 
     #[ORM\Column(length: 255)]
     private ?string $name = null;
@@ -40,7 +40,7 @@ class AuthTypeProvider
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $updatedDate = null;
 
-    #[ORM\OneToMany(mappedBy: 'provider', targetEntity: AuthTypeProviderSettings::class)]
+    #[ORM\OneToMany(mappedBy: 'provider', targetEntity: AuthWayProviderSettings::class)]
     private Collection $settings;
 
     public function __construct()
@@ -61,18 +61,6 @@ class AuthTypeProvider
     public function setDate(\DateTimeInterface $date): self
     {
         $this->date = $date;
-
-        return $this;
-    }
-
-    public function getType(): ?AuthType
-    {
-        return $this->type;
-    }
-
-    public function setType(?AuthType $type): self
-    {
-        $this->type = $type;
 
         return $this;
     }
@@ -137,6 +125,18 @@ class AuthTypeProvider
         return $this;
     }
 
+    public function getWay(): ?AuthWay
+    {
+        return $this->way;
+    }
+
+    public function setWay(?AuthWay $way): self
+    {
+        $this->way = $way;
+
+        return $this;
+    }
+
     public function getUpdatedDate(): ?\DateTimeInterface
     {
         return $this->updatedDate;
@@ -150,14 +150,14 @@ class AuthTypeProvider
     }
 
     /**
-     * @return Collection<int, AuthTypeProviderSettings>
+     * @return Collection<int, AuthWayProviderSettings>
      */
     public function getSettings(): Collection
     {
         return $this->settings;
     }
 
-    public function addSetting(AuthTypeProviderSettings $setting): self
+    public function addSetting(AuthWayProviderSettings $setting): self
     {
         if (!$this->settings->contains($setting)) {
             $this->settings->add($setting);
@@ -167,7 +167,7 @@ class AuthTypeProvider
         return $this;
     }
 
-    public function removeSetting(AuthTypeProviderSettings $setting): self
+    public function removeSetting(AuthWayProviderSettings $setting): self
     {
         if ($this->settings->removeElement($setting)) {
             // set the owning side to null (unless already changed)

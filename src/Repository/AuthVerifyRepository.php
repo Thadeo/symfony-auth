@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\AuthVerify;
 use App\Entity\AuthType;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -43,13 +44,15 @@ class AuthVerifyRepository extends ServiceEntityRepository
     /**
      * Find One Verify
      * 
-     * @param string auth
-     * @param ?string token
-     * @param ?string device
-     * @param ?bool active
+     * @param User user
+     * @param string identifier
+     * @param string token
+     * @param string device
+     * @param bool active
      */
     public function findOneVerify(
-        string $auth,
+        User $user,
+        string $identifier,
         string $token = null,
         string $device = null,
         bool $active = null
@@ -58,8 +61,14 @@ class AuthVerifyRepository extends ServiceEntityRepository
         $query = $this->createQueryBuilder('a')->select('DISTINCT a')
             ->join(AuthType::class, 'au', 
             \Doctrine\ORM\Query\Expr\Join::WITH, 'a.authType = au.id')
-            ->andWhere('au.code = :code')
-            ->setParameter('code', $auth);
+            ->andWhere('au.identifier = :identifier')
+            ->setParameter('identifier', $identifier);
+
+        // Find user
+        if($user) {
+            $query->andWhere('a.user = :user')
+                  ->setParameter('user', $user);
+        }
 
         // Find token
         if($token) {

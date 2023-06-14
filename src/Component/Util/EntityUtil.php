@@ -5,6 +5,7 @@ use App\Entity\Auth;
 use App\Entity\AuthType;
 use App\Entity\AuthTypeProvider;
 use App\Entity\AuthVerify;
+use App\Entity\AuthWayProvider;
 use App\Entity\Country;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
@@ -58,7 +59,7 @@ class EntityUtil
      * 
      * @param TranslatorInterface lang
      * @param EntityManagerInterface entitymanager
-     * @param string auth
+     * @param string identifier
      * @param ?bool active
      * 
      * @return AuthType
@@ -66,19 +67,19 @@ class EntityUtil
     public static function findOneAuthType(
         TranslatorInterface $lang,
         EntityManagerInterface $entityManager,
-        string $auth,
+        string $identifier,
         bool $active = null
     )
     {
         try {
             // Find Auth Type
-            $authType = $entityManager->getRepository(AuthType::class)->findOneBy(['code' => $auth]);
+            $authType = $entityManager->getRepository(AuthType::class)->findOneType($identifier, $active);
 
             // Auth Type not exist
-            if(!$authType) throw new \Exception("Auth type $auth not exist");
+            if(!$authType) throw new \Exception("Auth identifier $identifier not exist");
 
             // Verify if is active
-            if($active && !$authType->getActive()) throw new \Exception("Authentication type not active");
+            if($active && !$authType->getActive()) throw new \Exception("Authentication not active");
 
             // Return Auth Type
             return $authType;
@@ -163,22 +164,22 @@ class EntityUtil
      * 
      * @param TranslatorInterface lang
      * @param EntityManagerInterface entitymanager
-     * @param string auth
+     * @param string identifier
      * 
      * @return AuthTypeProvider
      */
     public static function findPrimaryAuthTypeProvider(
         TranslatorInterface $lang,
         EntityManagerInterface $entityManager,
-        string $auth
+        string $identifier
     )
     {
         try {
             // Find Auth Type
-            $authType = $entityManager->getRepository(AuthTypeProvider::class)->findOneProvider($auth, true, true);
+            $authType = $entityManager->getRepository(AuthWayProvider::class)->findOneProvider($identifier, true, true);
 
             // Auth Type not exist
-            if(!$authType) throw new \Exception("Auth type provider $auth not exist");
+            if(!$authType) throw new \Exception("Auth provider $identifier not exist");
 
             // Return Auth Type
             return $authType;
@@ -194,17 +195,19 @@ class EntityUtil
      * 
      * @param TranslatorInterface lang
      * @param EntityManagerInterface entitymanager
-     * @param string auth
-     * @param ?string token
-     * @param ?string device
-     * @param ?bool active
+     * @param User user
+     * @param string identifier
+     * @param string token
+     * @param string device
+     * @param bool active
      * 
      * @return AuthVerify
      */
     public static function findOneAuthVerify(
         TranslatorInterface $lang,
         EntityManagerInterface $entityManager,
-        string $auth,
+        User $user,
+        string $identifier,
         string $token = null,
         string $device = null,
         bool $active = null
@@ -212,10 +215,10 @@ class EntityUtil
     {
         try {
             // Find Auth Verify
-            $authVerify = $entityManager->getRepository(AuthVerify::class)->findOneVerify($auth, $token, $device, $active);
+            $authVerify = $entityManager->getRepository(AuthVerify::class)->findOneVerify($user, $identifier, $token, $device, $active);
 
             // Auth Verify not exist
-            if(!$authVerify) throw new \Exception(($token) ? "Token $token not valid" : "Auth $auth not exist");
+            if(!$authVerify) throw new \Exception(($token) ? "Token $token not valid" : "Auth identifier $identifier not exist");
 
             // Verify if is active
             if($active && !$authVerify->getActive()) throw new \Exception("You have already verify");
@@ -244,10 +247,39 @@ class EntityUtil
         try {
 
             // Find User
+            $user = self::findOneUser($lang, $entityManager, $email);
+
+            // User exist
+            if(!$user instanceof \Exception) throw new \Exception("Email $email has been exist");
+
+            // Return User
+            return $user;
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return $th;
+        }
+    }
+
+    /**
+     * Find One User
+     * 
+     * @param EntityManagerInterface entitymanager
+     * @param string email
+     */
+    public static function findOneUser(
+        TranslatorInterface $lang,
+        EntityManagerInterface $entityManager,
+        string $email
+    )
+    {
+        try {
+
+            // Find User
             $user = $entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
 
             // User exist
-            if($user) throw new \Exception("Email $email has been exist");
+            if(!$user) throw new \Exception("Email $email not exist");
 
             // Return User
             return $user;

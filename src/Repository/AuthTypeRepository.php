@@ -39,28 +39,34 @@ class AuthTypeRepository extends ServiceEntityRepository
         }
     }
 
-//    /**
-//     * @return AuthType[] Returns an array of AuthType objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('a')
-//            ->andWhere('a.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('a.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    /**
+     * Find One Type
+     * 
+     * @param string identifier
+     * @param bool active
+     */
+    public function findOneType(
+        string $identifier,
+        bool $active = null
+    )
+    {
+        $query = $this->createQueryBuilder('a')
+            ->andWhere('a.identifier = :identifier')
+            ->setParameter('identifier', $identifier);
 
-//    public function findOneBySomeField($value): ?AuthType
-//    {
-//        return $this->createQueryBuilder('a')
-//            ->andWhere('a.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+        // Find active
+        if($active || $active == false) {
+            $query->andWhere('a.active = :active')
+                  ->setParameter('active', $active);
+        }
+
+        // Find One Result
+        $query->setMaxResults(1);
+
+        // Query Result
+        $result = $query->getQuery()->getOneOrNullResult();
+
+        // Return Result
+        return $result;
+    }
 }

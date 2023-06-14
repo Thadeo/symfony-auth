@@ -112,6 +112,138 @@ class AuthService
     }
 
     /**
+     * Forget User Password
+     * 
+     * This is used to reset new password
+     * none login user
+     * 
+     * @param bool jsonResponse
+     * @param string email
+     * @param string identifier
+     * @param string token
+     * @param string newPassword
+     */
+    public function forgetUserPassword(
+        bool $jsonResponse,
+        string $email,
+        string $identifier,
+        string $token,
+        string $newPassword
+    )
+    {
+        try {
+            
+            // Find User
+            $user = EntityUtil::findOneUser($this->lang, $this->entityManager, $email);
+
+            // Exception
+            if($user instanceof \Exception) throw new \Exception($user->getMessage());
+            
+            // Verify Authentication
+            $authentication = EntityUtil::findOneAuthVerify($this->lang, $this->entityManager, $user, $identifier, $token, $_SERVER['HTTP_USER_AGENT'], true);
+
+            // Exception
+            if($authentication instanceof \Exception) throw new \Exception($authentication->getMessage());
+            
+            // Verify identifier
+            if(!in_array($authentication->getAuthType()->getAuth()->getCode(), ['auth_reset_password'])) throw new \Exception($this->lang->trans('auth.not_valid'));
+            
+            // Hash Password
+            $passwordHash = $this->userPasswordHash->hashPassword($user, $newPassword);
+
+            // Update Data
+            $user->setPassword($passwordHash);
+
+            // Flush changes
+            $this->entityManager->flush();
+
+            // Remove & Flush Authentication
+            $this->entityManager->remove($authentication);
+            $this->entityManager->flush();
+
+            // Return Response
+            return ResponseUtil::response($jsonResponse, $user, 200, ['user' => $user->getFullName(), 'email' => $user->getEmail()], $this->lang->trans('auth.password_reset.success'));
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return ResponseUtil::response($jsonResponse, $th, 400, null, $th->getMessage());
+        }
+    }
+
+    /**
+     * Forget User Password
+     * 
+     * This is used to get all Auth
+     * none login user
+     * 
+     * @param bool jsonResponse
+     * @param string email
+     */
+    public function forgetUserPasswordFactor(
+        bool $jsonResponse,
+        string $email
+    )
+    {
+        try {
+            
+            // Find User
+            $user = EntityUtil::findOneUser($this->lang, $this->entityManager, $email);
+
+            // Exception
+            if($user instanceof \Exception) throw new \Exception($user->getMessage());
+            
+            // Get All Authentication
+            $authentication = $this->factorAllTypeAuth($user, 'auth_reset_password');
+            
+            // Return Response
+            return $authentication;
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return ResponseUtil::response($jsonResponse, $th, 400, null, $th->getMessage());
+        }
+    }
+
+    /**
+     * Forget User Password
+     * 
+     * This is used to submit new token
+     * none login user
+     * 
+     * @param bool jsonResponse
+     * @param string identifier
+     * @param string email
+     */
+    public function forgetUserPasswordFactorSubmit(
+        bool $jsonResponse,
+        string $identifier,
+        string $email
+    )
+    {
+        try {
+            
+            // Find User
+            $user = EntityUtil::findOneUser($this->lang, $this->entityManager, $email);
+
+            // Exception
+            if($user instanceof \Exception) throw new \Exception($user->getMessage());
+            
+            // Generate new Token
+            $token = $this->factorAuthSubmit($jsonResponse, $user, 'auth_reset_password', $identifier);
+
+            // Exception
+            if($token instanceof \Exception) throw new \Exception($token->getMessage());
+
+            // Return Response
+            return $token;
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return ResponseUtil::response($jsonResponse, $th, 400, null, $th->getMessage());
+        }
+    }
+
+    /**
      * Password Verify
      * 
      * Verify Password
@@ -164,7 +296,7 @@ class AuthService
             // Add Security Token
             $this->session->set('_security_main', serialize($token));
 
-            // Return User
+            // Return Response
             return ResponseUtil::response($jsonResponse, $user, 200, ['user' => $user->getFullName(), 'email' => $user->getEmail()], 'Authentication Successful');
 
         } catch (\Exception $th) {
@@ -205,18 +337,18 @@ class AuthService
                 if($type->getActive() == false) continue;
 
                 // Find Primary Provider
-                $provider = EntityUtil::findPrimaryAuthTypeProvider($this->lang, $this->entityManager, $type->getCode());
+                $provider = EntityUtil::findPrimaryAuthTypeProvider($this->lang, $this->entityManager, $type->getAuthWay()->getIdentifier());
 
                 // Exception
                 if($provider instanceof \Exception) continue;
 
                 // Add Authentication
                 $authTypes['auth'][] = [
-                    'verify_type' => $type->getVerifyType(),
-                    'type' => $type->getCode(),
-                    'name' => $type->getName(),
-                    'short_desc' => $type->getShortDesc(),
-                    'long_desc' => $type->getLongDesc()
+                    'identifier' => $type->getIdentifier(),
+                    'type' => $type->getAuthWay()->getVerifyType(),
+                    'name' => $type->getAuthWay()->getName(),
+                    'short_desc' => $type->getAuthWay()->getShortDesc(),
+                    'long_desc' => $type->getAuthWay()->getLongDesc()
                 ];
             }
 
@@ -240,14 +372,17 @@ class AuthService
      * 
      * Submit Auth Submission
      * 
+     * @param bool jsonResponse
      * @param User user
-     * @param string authType
+     * @param string auth
+     * @param string identifier
      * 
-     * @return array
      */
     public function factorAuthSubmit(
+        bool $jsonResponse,
         User $user,
-        string $authType
+        string $auth = null,
+        string $identifier
     )
     {
         // Hold Response
@@ -256,15 +391,21 @@ class AuthService
         try {
             
             // Find Auth
-            $auth = EntityUtil::findOneAuthType($this->lang, $this->entityManager, $authType, true);
+            $authentication = EntityUtil::findOneAuthType($this->lang, $this->entityManager, $identifier, true);
 
             // Exception
-            if($auth instanceof \Exception) throw new \Exception($auth->getMessage());
+            if($authentication instanceof \Exception) throw new \Exception($authentication->getMessage());
+
+            // Verify auth identifier pass
+            if($auth && !in_array($authentication->getAuth()->getCode(), [$auth])) throw new \Exception($this->lang->trans('auth.not_valid'));
+            
+            // Verify if Registration
+            if($user->isAuthFactorRegister() != true && $authentication->getAuth()->getCode() == 'auth_register' || $user->isAuthFactorLogin() != true && $authentication->getAuth()->getCode() == 'auth_login') throw new \Exception("Sorry you can't use this service at the moment.");
             
             // Verify Type
-            switch ($auth->getVerifyType()) {
+            switch ($authentication->getAuthWay()->getVerifyType()) {
                 case 'token':
-                    $addUpdate = $this->factorAddUpdateAuthVerify($auth, $user);
+                    $addUpdate = $this->factorAddUpdateAuthVerify($authentication, $user);
                     break;
                 
                 default:
@@ -278,11 +419,11 @@ class AuthService
             // Send Notification
 
             // Return Response
-            return ResponseUtil::response(true, $addUpdate, 200, $response, $this->lang->trans('auth.confirm_token'));
+            return ResponseUtil::response($jsonResponse, $addUpdate, 200, $response, $this->lang->trans('auth.confirm_token'));
 
         } catch (\Exception $th) {
             //throw $th;
-            return ResponseUtil::response(true, $th, 400, null, $th->getMessage());
+            return ResponseUtil::response($jsonResponse, $th, 400, null, $th->getMessage());
         }
     }
 
@@ -292,14 +433,14 @@ class AuthService
      * Verify Auth Submission
      * 
      * @param User user
-     * @param string authType
+     * @param string identifier
      * @param string token
      * 
      * @return array
      */
     public function factorAuthConfirmSubmit(
         User $user,
-        string $authType,
+        string $identifier,
         string $token
     )
     {
@@ -309,7 +450,7 @@ class AuthService
         try {
             
             // Find Auth
-            $auth = EntityUtil::findOneAuthVerify($this->lang, $this->entityManager, $authType, $token, $_SERVER['HTTP_USER_AGENT'], true);
+            $auth = EntityUtil::findOneAuthVerify($this->lang, $this->entityManager, $user, $identifier, $token, $_SERVER['HTTP_USER_AGENT'], true);
 
             // Exception
             if($auth instanceof \Exception) throw new \Exception($auth->getMessage());
@@ -353,7 +494,7 @@ class AuthService
         try {
             
             // Find Verify
-            $verify = EntityUtil::findOneAuthVerify($this->lang, $this->entityManager, $authType->getCode(), null, $_SERVER['HTTP_USER_AGENT'], true);
+            $verify = EntityUtil::findOneAuthVerify($this->lang, $this->entityManager, $user, $authType->getIdentifier(), null, $_SERVER['HTTP_USER_AGENT'], true);
 
             // Verify Exist
             if(!$verify instanceof \Exception) {

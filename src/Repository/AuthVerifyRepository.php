@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\AuthVerify;
 use App\Entity\AuthType;
 use App\Entity\User;
+use App\Entity\UserDevices;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -45,16 +46,16 @@ class AuthVerifyRepository extends ServiceEntityRepository
      * Find One Verify
      * 
      * @param User user
+     * @param UserDevices device
      * @param string identifier
      * @param string token
-     * @param string device
      * @param bool active
      */
     public function findOneVerify(
         User $user,
+        UserDevices $device = null,
         string $identifier,
         string $token = null,
-        string $device = null,
         bool $active = null
     )
     {
@@ -70,16 +71,16 @@ class AuthVerifyRepository extends ServiceEntityRepository
                   ->setParameter('user', $user);
         }
 
-        // Find token
-        if($token) {
-            $query->andWhere('a.token = :token')
-                  ->setParameter('token', $token);
-        }
-
         // Find device
         if($device) {
             $query->andWhere('a.device = :device')
                   ->setParameter('device', $device);
+        }
+
+        // Find token
+        if($token) {
+            $query->andWhere('a.token = :token')
+                  ->setParameter('token', $token);
         }
 
         // Find active

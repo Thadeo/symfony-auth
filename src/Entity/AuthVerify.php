@@ -23,11 +23,11 @@ class AuthVerify
     #[ORM\ManyToOne]
     private ?AuthType $authType = null;
 
+    #[ORM\ManyToOne]
+    private ?UserDevices $device = null;
+
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $token = null;
-
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $device = null;
 
     #[ORM\Column]
     private ?bool $active = null;
@@ -73,6 +73,18 @@ class AuthVerify
         return $this;
     }
 
+    public function getDevice(): ?UserDevices
+    {
+        return $this->device;
+    }
+
+    public function setDevice(?UserDevices $device): self
+    {
+        $this->device = $device;
+
+        return $this;
+    }
+
     public function getToken(): ?string
     {
         return $this->token;
@@ -81,18 +93,6 @@ class AuthVerify
     public function setToken(?string $token): self
     {
         $this->token = $token;
-
-        return $this;
-    }
-
-    public function getDevice(): ?string
-    {
-        return $this->device;
-    }
-
-    public function setDevice(?string $device): self
-    {
-        $this->device = $device;
 
         return $this;
     }

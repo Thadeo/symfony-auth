@@ -28,7 +28,8 @@ class AuthService
         TokenStorageInterface $tokenStorage,
         private RequestStack $requestStack,
         TranslatorInterface $lang,
-        private SettingService $setting
+        private SettingService $setting,
+        private SecurityService $security
     )
     {
         $this->entityManager = $entityManager;
@@ -36,6 +37,7 @@ class AuthService
         $this->tokenStorage = $tokenStorage;
         $this->lang = $lang;
         $this->setting = $setting;
+        $this->security = $security;
 
         // We use request stack to get session because - because 
         // SessionInterface it cause issue when we access in controller
@@ -140,7 +142,7 @@ class AuthService
             if($user instanceof \Exception) throw new \Exception($user->getMessage());
             
             // Verify Authentication
-            $authentication = EntityUtil::findOneAuthVerify($this->lang, $this->entityManager, $user, $identifier, $token, $_SERVER['HTTP_USER_AGENT'], true);
+            $authentication = EntityUtil::findOneAuthVerify($this->lang, $this->entityManager, $user, $this->security->addUpdateUserDevice($user), $identifier, $token, true);
 
             // Exception
             if($authentication instanceof \Exception) throw new \Exception($authentication->getMessage());
@@ -450,7 +452,7 @@ class AuthService
         try {
             
             // Find Auth
-            $auth = EntityUtil::findOneAuthVerify($this->lang, $this->entityManager, $user, $identifier, $token, $_SERVER['HTTP_USER_AGENT'], true);
+            $auth = EntityUtil::findOneAuthVerify($this->lang, $this->entityManager, $user, $this->security->addUpdateUserDevice($user), $identifier, $token, true);
 
             // Exception
             if($auth instanceof \Exception) throw new \Exception($auth->getMessage());
@@ -494,7 +496,7 @@ class AuthService
         try {
             
             // Find Verify
-            $verify = EntityUtil::findOneAuthVerify($this->lang, $this->entityManager, $user, $authType->getIdentifier(), null, $_SERVER['HTTP_USER_AGENT'], true);
+            $verify = EntityUtil::findOneAuthVerify($this->lang, $this->entityManager, $user, $this->security->addUpdateUserDevice($user), $authType->getIdentifier(), null, true);
 
             // Verify Exist
             if(!$verify instanceof \Exception) {
@@ -518,7 +520,7 @@ class AuthService
             $verify->setAuthType($authType);
             $verify->setUser($user);
             $verify->setToken(GenerateUtil::number(6));
-            $verify->setDevice($_SERVER['HTTP_USER_AGENT']);
+            $verify->setDevice($this->security->addUpdateUserDevice($user));
             $verify->setActive(true);
 
             // Add Data & Flush changes

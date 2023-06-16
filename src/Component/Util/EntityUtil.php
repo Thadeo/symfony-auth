@@ -8,6 +8,7 @@ use App\Entity\AuthVerify;
 use App\Entity\AuthWayProvider;
 use App\Entity\Country;
 use App\Entity\User;
+use App\Entity\UserDevices;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -207,15 +208,15 @@ class EntityUtil
         TranslatorInterface $lang,
         EntityManagerInterface $entityManager,
         User $user,
+        UserDevices $device = null,
         string $identifier,
         string $token = null,
-        string $device = null,
         bool $active = null
     )
     {
         try {
             // Find Auth Verify
-            $authVerify = $entityManager->getRepository(AuthVerify::class)->findOneVerify($user, $identifier, $token, $device, $active);
+            $authVerify = $entityManager->getRepository(AuthVerify::class)->findOneVerify($user, $device, $identifier, $token, $active);
 
             // Auth Verify not exist
             if(!$authVerify) throw new \Exception(($token) ? "Token $token not valid" : "Auth identifier $identifier not exist");
@@ -312,6 +313,44 @@ class EntityUtil
 
             // Return Country
             return $country;
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return $th;
+        }
+    }
+
+    /**
+     * Find One User Device
+     * 
+     * @param TranslatorInterface lang
+     * @param EntityManagerInterface entitymanager
+     * @param User user
+     * @param string device
+     * @param bool active
+     * 
+     * @return UserDevices
+     */
+    public static function findOneUserDevice(
+        TranslatorInterface $lang,
+        EntityManagerInterface $entityManager,
+        User $user,
+        string $device = null,
+        bool $active = null
+    )
+    {
+        try {
+            // Find Device
+            $device = $entityManager->getRepository(UserDevices::class)->findOneDevice($user, $device, $active);
+
+            // Auth Verify not exist
+            if(!$device) throw new \Exception("Device not exist");
+
+            // Verify if is active
+            if($active && !$device->isActive()) throw new \Exception("Device not active");
+
+            // Return Device
+            return $device;
 
         } catch (\Exception $th) {
             //throw $th;

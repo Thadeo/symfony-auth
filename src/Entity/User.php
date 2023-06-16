@@ -83,6 +83,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?bool $authFactorLogin = null;
 
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: UserDevices::class)]
+    private Collection $devices;
+
     public function __construct()
     {
         $this->userPhones = new ArrayCollection();
@@ -90,6 +93,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->sessions = new ArrayCollection();
         $this->userActivities = new ArrayCollection();
         $this->settings = new ArrayCollection();
+        $this->devices = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -479,6 +483,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setAuthFactorLogin(bool $authFactorLogin): self
     {
         $this->authFactorLogin = $authFactorLogin;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, UserDevices>
+     */
+    public function getDevices(): Collection
+    {
+        return $this->devices;
+    }
+
+    public function addDevice(UserDevices $device): self
+    {
+        if (!$this->devices->contains($device)) {
+            $this->devices->add($device);
+            $device->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDevice(UserDevices $device): self
+    {
+        if ($this->devices->removeElement($device)) {
+            // set the owning side to null (unless already changed)
+            if ($device->getUser() === $this) {
+                $device->setUser(null);
+            }
+        }
 
         return $this;
     }

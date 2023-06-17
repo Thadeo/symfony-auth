@@ -27,7 +27,7 @@ services:
     App\Component\Session\PdoSessionHandler:
         arguments:
             - '%env(DATABASE_URL)%'
-            - { db_id_col: ids, db_data_col: data, db_time_col: time, db_lifetime_col: lifetime, lock_mode: 0 }
+            - { db_id_col: ids, db_data_col: data, db_time_col: time, db_lifetime_col: lifetime }
             - '@doctrine.orm.default_entity_manager'
             - '@security.token_storage'
             

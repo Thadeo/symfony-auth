@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserDevicesRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -34,6 +36,18 @@ class UserDevices
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $updatedDate = null;
+
+    #[ORM\OneToMany(mappedBy: 'device', targetEntity: UserActivity::class)]
+    private Collection $activities;
+
+    #[ORM\OneToMany(mappedBy: 'device', targetEntity: Sessions::class)]
+    private Collection $sessions;
+
+    public function __construct()
+    {
+        $this->activities = new ArrayCollection();
+        $this->sessions = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -120,6 +134,66 @@ class UserDevices
     public function setUpdatedDate(\DateTimeInterface $updatedDate): self
     {
         $this->updatedDate = $updatedDate;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, UserActivity>
+     */
+    public function getActivities(): Collection
+    {
+        return $this->activities;
+    }
+
+    public function addActivity(UserActivity $activity): self
+    {
+        if (!$this->activities->contains($activity)) {
+            $this->activities->add($activity);
+            $activity->setDevice($this);
+        }
+
+        return $this;
+    }
+
+    public function removeActivity(UserActivity $activity): self
+    {
+        if ($this->activities->removeElement($activity)) {
+            // set the owning side to null (unless already changed)
+            if ($activity->getDevice() === $this) {
+                $activity->setDevice(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Sessions>
+     */
+    public function getSessions(): Collection
+    {
+        return $this->sessions;
+    }
+
+    public function addSession(Sessions $session): self
+    {
+        if (!$this->sessions->contains($session)) {
+            $this->sessions->add($session);
+            $session->setDevice($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSession(Sessions $session): self
+    {
+        if ($this->sessions->removeElement($session)) {
+            // set the owning side to null (unless already changed)
+            if ($session->getDevice() === $this) {
+                $session->setDevice(null);
+            }
+        }
 
         return $this;
     }

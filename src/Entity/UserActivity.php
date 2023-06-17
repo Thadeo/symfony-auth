@@ -23,26 +23,17 @@ class UserActivity
     #[ORM\ManyToOne(inversedBy: 'userActivities')]
     private ?UserActivityCategory $category = null;
 
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $browser = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $ip = null;
+    #[ORM\ManyToOne(inversedBy: 'activities')]
+    private ?UserDevices $device = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $location = null;
-
-    #[ORM\Column(nullable: true)]
-    private array $locationData = [];
+    private ?string $longDesc = null;
 
     #[ORM\Column(length: 255)]
     private ?string $mode = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $updatedDate = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $session = null;
 
     public function getId(): ?int
     {
@@ -85,50 +76,26 @@ class UserActivity
         return $this;
     }
 
-    public function getBrowser(): ?string
+    public function getDevice(): ?UserDevices
     {
-        return $this->browser;
+        return $this->device;
     }
 
-    public function setBrowser(?string $browser): self
+    public function setDevice(?UserDevices $device): self
     {
-        $this->browser = $browser;
+        $this->device = $device;
 
         return $this;
     }
 
-    public function getIp(): ?string
+    public function getLongDesc(): ?string
     {
-        return $this->ip;
+        return $this->longDesc;
     }
 
-    public function setIp(?string $ip): self
+    public function setLongDesc(?string $longDesc): self
     {
-        $this->ip = $ip;
-
-        return $this;
-    }
-
-    public function getLocation(): ?string
-    {
-        return $this->location;
-    }
-
-    public function setLocation(?string $location): self
-    {
-        $this->location = $location;
-
-        return $this;
-    }
-
-    public function getLocationData(): array
-    {
-        return $this->locationData;
-    }
-
-    public function setLocationData(?array $locationData): self
-    {
-        $this->locationData = $locationData;
+        $this->longDesc = $longDesc;
 
         return $this;
     }
@@ -153,18 +120,6 @@ class UserActivity
     public function setUpdatedDate(?\DateTimeInterface $updatedDate): self
     {
         $this->updatedDate = $updatedDate;
-
-        return $this;
-    }
-
-    public function getSession(): ?string
-    {
-        return $this->session;
-    }
-
-    public function setSession(?string $session): self
-    {
-        $this->session = $session;
 
         return $this;
     }

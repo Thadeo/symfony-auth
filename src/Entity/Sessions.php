@@ -17,26 +17,11 @@ class Sessions
     #[ORM\Column(type: Types::BINARY, unique: true, name: 'ids')]
     private $ids = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $date = null;
 
     #[ORM\ManyToOne(inversedBy: 'sessions')]
     private ?User $user = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $ip = null;
-
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $browser = null;
-
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $location = null;
-
-    #[ORM\Column(nullable: true)]
-    private array $locationData = [];
-
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $lastLogin = null;
 
     #[ORM\Column(type: Types::BLOB, nullable: true)]
     private $data = null;
@@ -46,6 +31,9 @@ class Sessions
 
     #[ORM\Column]
     private ?int $lifetime = null;
+
+    #[ORM\ManyToOne(inversedBy: 'sessions')]
+    private ?UserDevices $device = null;
 
     public function getId(): ?int
     {
@@ -88,66 +76,6 @@ class Sessions
         return $this;
     }
 
-    public function getIp(): ?string
-    {
-        return $this->ip;
-    }
-
-    public function setIp(?string $ip): self
-    {
-        $this->ip = $ip;
-
-        return $this;
-    }
-
-    public function getBrowser(): ?string
-    {
-        return $this->browser;
-    }
-
-    public function setBrowser(?string $browser): self
-    {
-        $this->browser = $browser;
-
-        return $this;
-    }
-
-    public function getLocation(): ?string
-    {
-        return $this->location;
-    }
-
-    public function setLocation(?string $location): self
-    {
-        $this->location = $location;
-
-        return $this;
-    }
-
-    public function getLocationData(): array
-    {
-        return $this->locationData;
-    }
-
-    public function setLocationData(?array $locationData): self
-    {
-        $this->locationData = $locationData;
-
-        return $this;
-    }
-
-    public function getLastLogin(): ?\DateTimeInterface
-    {
-        return $this->lastLogin;
-    }
-
-    public function setLastLogin(?\DateTimeInterface $lastLogin): self
-    {
-        $this->lastLogin = $lastLogin;
-
-        return $this;
-    }
-
     public function getData()
     {
         return $this->data;
@@ -180,6 +108,18 @@ class Sessions
     public function setLifetime(int $lifetime): self
     {
         $this->lifetime = $lifetime;
+
+        return $this;
+    }
+
+    public function getDevice(): ?UserDevices
+    {
+        return $this->device;
+    }
+
+    public function setDevice(?UserDevices $device): self
+    {
+        $this->device = $device;
 
         return $this;
     }

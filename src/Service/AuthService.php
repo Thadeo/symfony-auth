@@ -91,6 +91,7 @@ class AuthService
             $passwordHash = $this->userPasswordHash->hashPassword($user, $password);
 
             // Prepaire Data
+            $user->setDate(new \DateTime());
             $user->setFirstName($firtName);
             $user->setMiddleName($middleName);
             $user->setLastName($lastName);
@@ -99,10 +100,15 @@ class AuthService
             $user->setIsVerified(false);
             $user->setAuthFactorRegister(($this->setting->getValueByKey('auth_register') == 1) ? true : false);
             $user->setAuthFactorLogin(($this->setting->getValueByKey('auth_login') == 1) ? true : false);
+            $user->setMode('live');
+            $user->setUpdatedDate(new \DateTime());
 
             // Add User & Flush changes
             $this->entityManager->persist($user);
             $this->entityManager->flush();
+
+            // Add Activity
+            $this->security->addUserActivity($user, 'auth_register', null, $user->getMode());
 
             // Return User
             return ResponseUtil::response($jsonResponse, $user, 200, ['user' => $user->getFullName(), 'email' => $user->getEmail()], $this->lang->trans('auth.signup.success'));
@@ -162,6 +168,9 @@ class AuthService
             // Remove & Flush Authentication
             $this->entityManager->remove($authentication);
             $this->entityManager->flush();
+
+            // Add Activity
+            $this->security->addUserActivity($user, 'auth_reset_password', null, $user->getMode());
 
             // Return Response
             return ResponseUtil::response($jsonResponse, $user, 200, ['user' => $user->getFullName(), 'email' => $user->getEmail()], $this->lang->trans('auth.password_reset.success'));
@@ -466,6 +475,9 @@ class AuthService
                 $user->setAuthFactorRegister(false);
                 $this->entityManager->flush();
             }
+
+            // Add Activity
+            $this->security->addUserActivity($user, $auth->getAuthType()->getAuth()->getCode(), null, $user->getMode());
             
             // Send Notification
 

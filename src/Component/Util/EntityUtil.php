@@ -7,6 +7,7 @@ use App\Entity\AuthTypeProvider;
 use App\Entity\AuthVerify;
 use App\Entity\AuthWayProvider;
 use App\Entity\Country;
+use App\Entity\Sessions;
 use App\Entity\User;
 use App\Entity\UserDevices;
 use Doctrine\ORM\EntityManagerInterface;
@@ -238,6 +239,8 @@ class EntityUtil
      * 
      * @param EntityManagerInterface entitymanager
      * @param string email
+     * 
+     * @return string
      */
     public static function verifyUniqueUser(
         TranslatorInterface $lang,
@@ -253,8 +256,8 @@ class EntityUtil
             // User exist
             if(!$user instanceof \Exception) throw new \Exception("Email $email has been exist");
 
-            // Return User
-            return $user;
+            // Return email
+            return $email;
 
         } catch (\Exception $th) {
             //throw $th;
@@ -351,6 +354,37 @@ class EntityUtil
 
             // Return Device
             return $device;
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return $th;
+        }
+    }
+
+    /**
+     * Find One Session
+     * 
+     * @param EntityManagerInterface entitymanager
+     * @param string sessionid
+     * 
+     * @return Sessions
+     */
+    public static function findOneSession(
+        TranslatorInterface $lang,
+        EntityManagerInterface $entityManager,
+        string $sessionid
+    )
+    {
+        try {
+
+            // Find Session
+            $session = $entityManager->getRepository(Sessions::class)->findOneBy(['ids' => $sessionid]);
+
+            // Session exist
+            if(!$session) throw new \Exception("Session not exist");
+
+            // Return User
+            return $session;
 
         } catch (\Exception $th) {
             //throw $th;

@@ -3,10 +3,14 @@
 namespace App\Controller\Api;
 
 use App\Component\Request\AppRequest;
+use App\Component\Util\EntityUtil;
+use App\Component\Util\ResponseUtil;
 use App\Service\AuthService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class AuthController extends AbstractController
 {
@@ -46,46 +50,19 @@ class AuthController extends AbstractController
     }
 
     /**
-     * 2-Factor Authentication
-     * 
-     * List all auth type such as
-     * email, sms and e.t.c
-     */
-    #[Route('/api/auth/factor', name: 'api_auth_factor', methods: ['POST'])]
-    public function factor(
-        AppRequest $request,
-        AuthService $auth
-    ): Response
-    {
-        $user = $this->getUser();
-
-        // Validate Rules
-        $validate = $request->validate([
-            'auth' => 'required|string'
-        ]);
-
-        // Verify Validation
-        if(!empty($validate['errors'])) return $this->json($validate, 400);
-
-        // Auth
-        $authUser = $auth->factorAllTypeAuth($user, $validate['auth']);
-
-        // Return Response
-        return $this->json($authUser, $authUser['status']);
-    }
-
-    /**
-     * 2-Factor Submit
+     * Token 2-Factor Submit
      * 
      * Submit data for authenticate 
      */
-    #[Route('/api/auth/factor/submit', name: 'api_auth_factor_submit', methods: ['POST'])]
+    #[Route('/api/auth/token/factor/submit', name: 'api_auth_login_factor_submit', methods: ['POST'])]
     public function factorAuthSubmit(
         AppRequest $request,
-        AuthService $auth
+        AuthService $auth,
+        TranslatorInterface $lang
     ): Response
     {
-        $user = $this->getUser();
+        // Check if user available in session
+        if($request->getSession()->get('apiUser') == null) return $this->json(ResponseUtil::jsonResponse(401, null, $lang->trans('auth.api.unauthorized')), 401);
 
         // Validate Rules
         $validate = $request->validate([
@@ -96,24 +73,26 @@ class AuthController extends AbstractController
         if(!empty($validate['errors'])) return $this->json($validate, 400);
         
         // Auth
-        $authUser = $auth->factorAuthSubmit(true, $user, null, $validate['identifier']);
+        $authUser = $auth->factorAuthSubmit(true, $request->getSession()->get('apiUser'), 'auth_login', $validate['identifier']);
 
         // Return Response
         return $this->json($authUser, $authUser['status']);
     }
 
     /**
-     * 2-Factor Confirm
+     * Token 2-Factor Confirm
      * 
      * Confirm Authentication submitted
      */
-    #[Route('/api/auth/factor/confirm', name: 'api_auth_factor_confirm', methods: ['POST'])]
+    #[Route('/api/auth/token/factor/confirm', name: 'api_auth_login_factor_confirm', methods: ['POST'])]
     public function factorAuthConfirm(
         AppRequest $request,
-        AuthService $auth
+        AuthService $auth,
+        TranslatorInterface $lang
     ): Response
     {
-        $user = $this->getUser();
+        // Check if user available in session
+        if($request->getSession()->get('apiUser') == null) return $this->json(ResponseUtil::jsonResponse(401, null, $lang->trans('auth.api.unauthorized')), 401);
 
         // Validate Rules
         $validate = $request->validate([
@@ -124,8 +103,12 @@ class AuthController extends AbstractController
         // Verify Validation
         if(!empty($validate['errors'])) return $this->json($validate, 400);
         
+        // Allow App to Authenticate
+        // This is option if you plan to use in web form, system should session and no api token return
+        $isApp = (isset($validate['isApp'])) ? true : false;
+
         // Auth
-        $authUser = $auth->factorAuthConfirmSubmit($user, $validate['identifier'], $validate['token']);
+        $authUser = $auth->userLoginFactorConfirm(true, $request->getSession()->get('apiUser'), $isApp, $validate['identifier'], $validate['token']);
 
         // Return Response
         return $this->json($authUser, $authUser['status']);
@@ -139,13 +122,16 @@ class AuthController extends AbstractController
     #[Route('/api/auth/forget/password', name: 'api_auth_forget_password', methods: ['POST'])]
     public function forgetPassword(
         AppRequest $request,
-        AuthService $auth
+        AuthService $auth,
+        TranslatorInterface $lang
     ): Response
     {
 
+        // Check if user available in session
+        if($request->getSession()->get('apiUser') == null) return $this->json(ResponseUtil::jsonResponse(401, null, $lang->trans('auth.api.unauthorized')), 401);
+
         // Validate Rules
         $validate = $request->validate([
-            'email' => 'required|email',
             'identifier' => 'required|string',
             'token' => 'required|string',
             'password' => 'required|string'
@@ -155,7 +141,7 @@ class AuthController extends AbstractController
         if(!empty($validate['errors'])) return $this->json($validate, 400);
 
         // Auth
-        $authUser = $auth->forgetUserPassword(true, $validate['email'], $validate['identifier'], $validate['token'], $validate['password']);
+        $authUser = $auth->forgetUserPassword(true, $request->getSession()->get('apiUser'), $validate['identifier'], $validate['token'], $validate['password']);
 
         // Return Response
         return $this->json($authUser, $authUser['status']);
@@ -170,7 +156,9 @@ class AuthController extends AbstractController
     #[Route('/api/auth/forget/password/factor', name: 'api_auth_forget_password_factor', methods: ['POST'])]
     public function forgetPasswordFactor(
         AppRequest $request,
-        AuthService $auth
+        AuthService $auth,
+        EntityManagerInterface $entityManager,
+        TranslatorInterface $lang
     ): Response
     {
 
@@ -181,9 +169,18 @@ class AuthController extends AbstractController
 
         // Verify Validation
         if(!empty($validate['errors'])) return $this->json($validate, 400);
+
+        // Find User
+        $user = EntityUtil::findOneUser($lang, $entityManager, $validate['email']);
+
+        // User not found
+        if($user instanceof \Exception) return $this->json(ResponseUtil::jsonResponse(401, null, $user->getMessage()), 401);
         
+        // Set User in session
+        $request->getSession()->set('apiUser', $user);
+
         // Auth
-        $authUser = $auth->forgetUserPasswordFactor(true, $validate['email']);
+        $authUser = $auth->factorAllTypeAuth($user, 'auth_reset_password');
 
         // Return Response
         return $this->json($authUser, $authUser['status']);
@@ -197,21 +194,24 @@ class AuthController extends AbstractController
     #[Route('/api/auth/forget/password/factor/submit', name: 'api_auth_forget_password_factor_submit', methods: ['POST'])]
     public function forgetPasswordFactorSubmit(
         AppRequest $request,
-        AuthService $auth
+        AuthService $auth,
+        TranslatorInterface $lang
     ): Response
     {
 
+        // Check if user available in session
+        if($request->getSession()->get('apiUser') == null) return $this->json(ResponseUtil::jsonResponse(401, null, $lang->trans('auth.api.unauthorized')), 401);
+
         // Validate Rules
         $validate = $request->validate([
-            'identifier' => 'required|string',
-            'email' => 'required|email'
+            'identifier' => 'required|string'
         ]);
 
         // Verify Validation
         if(!empty($validate['errors'])) return $this->json($validate, 400);
         
         // Auth
-        $authUser = $auth->forgetUserPasswordFactorSubmit(true, $validate['identifier'], $validate['email']);
+        $authUser = $auth->factorAuthSubmit(true, $request->getSession()->get('apiUser'), 'auth_reset_password', $validate['identifier']);
 
         // Return Response
         return $this->json($authUser, $authUser['status']);

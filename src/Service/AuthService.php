@@ -8,6 +8,7 @@ use App\Entity\AuthType;
 use App\Entity\AuthVerify;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
@@ -29,7 +30,8 @@ class AuthService
         private RequestStack $requestStack,
         TranslatorInterface $lang,
         private SettingService $setting,
-        private SecurityService $security
+        private SecurityService $security,
+        private JWTTokenManagerInterface $jwtToken
     )
     {
         $this->entityManager = $entityManager;
@@ -38,6 +40,7 @@ class AuthService
         $this->lang = $lang;
         $this->setting = $setting;
         $this->security = $security;
+        $this->jwtToken = $jwtToken;
 
         // We use request stack to get session because - because 
         // SessionInterface it cause issue when we access in controller
@@ -123,29 +126,22 @@ class AuthService
      * Forget User Password
      * 
      * This is used to reset new password
-     * none login user
      * 
      * @param bool jsonResponse
-     * @param string email
+     * @param User user
      * @param string identifier
      * @param string token
      * @param string newPassword
      */
     public function forgetUserPassword(
         bool $jsonResponse,
-        string $email,
+        User $user,
         string $identifier,
         string $token,
         string $newPassword
     )
     {
         try {
-            
-            // Find User
-            $user = EntityUtil::findOneUser($this->lang, $this->entityManager, $email);
-
-            // Exception
-            if($user instanceof \Exception) throw new \Exception($user->getMessage());
             
             // Verify Authentication
             $authentication = EntityUtil::findOneAuthVerify($this->lang, $this->entityManager, $user, $this->security->addUpdateUserDevice($user), $identifier, $token, true);
@@ -172,81 +168,11 @@ class AuthService
             // Add Activity
             $this->security->addUserActivity($user, 'auth_reset_password', null, $user->getMode());
 
+            // Remove Api User in session
+            $this->session->remove('apiUser');
+
             // Return Response
             return ResponseUtil::response($jsonResponse, $user, 200, ['user' => $user->getFullName(), 'email' => $user->getEmail()], $this->lang->trans('auth.password_reset.success'));
-
-        } catch (\Exception $th) {
-            //throw $th;
-            return ResponseUtil::response($jsonResponse, $th, 400, null, $th->getMessage());
-        }
-    }
-
-    /**
-     * Forget User Password
-     * 
-     * This is used to get all Auth
-     * none login user
-     * 
-     * @param bool jsonResponse
-     * @param string email
-     */
-    public function forgetUserPasswordFactor(
-        bool $jsonResponse,
-        string $email
-    )
-    {
-        try {
-            
-            // Find User
-            $user = EntityUtil::findOneUser($this->lang, $this->entityManager, $email);
-
-            // Exception
-            if($user instanceof \Exception) throw new \Exception($user->getMessage());
-            
-            // Get All Authentication
-            $authentication = $this->factorAllTypeAuth($user, 'auth_reset_password');
-            
-            // Return Response
-            return $authentication;
-
-        } catch (\Exception $th) {
-            //throw $th;
-            return ResponseUtil::response($jsonResponse, $th, 400, null, $th->getMessage());
-        }
-    }
-
-    /**
-     * Forget User Password
-     * 
-     * This is used to submit new token
-     * none login user
-     * 
-     * @param bool jsonResponse
-     * @param string identifier
-     * @param string email
-     */
-    public function forgetUserPasswordFactorSubmit(
-        bool $jsonResponse,
-        string $identifier,
-        string $email
-    )
-    {
-        try {
-            
-            // Find User
-            $user = EntityUtil::findOneUser($this->lang, $this->entityManager, $email);
-
-            // Exception
-            if($user instanceof \Exception) throw new \Exception($user->getMessage());
-            
-            // Generate new Token
-            $token = $this->factorAuthSubmit($jsonResponse, $user, 'auth_reset_password', $identifier);
-
-            // Exception
-            if($token instanceof \Exception) throw new \Exception($token->getMessage());
-
-            // Return Response
-            return $token;
 
         } catch (\Exception $th) {
             //throw $th;
@@ -284,6 +210,69 @@ class AuthService
     }
 
     /**
+     * User Login Factor
+     * 
+     * This is used to confirm factor
+     * 
+     * @param bool jsonResponse
+     * @param User user
+     * @param bool appAuth
+     * @param string identifier
+     * @param string token
+     * @param string newPassword
+     */
+    public function userLoginFactorConfirm(
+        bool $jsonResponse,
+        User $user,
+        bool $appAuth,
+        string $identifier,
+        string $token
+    )
+    {
+        try {
+            
+            // Verify Authentication
+            $authentication = EntityUtil::findOneAuthVerify($this->lang, $this->entityManager, $user, $this->security->addUpdateUserDevice($user), $identifier, $token, true);
+
+            // Exception
+            if($authentication instanceof \Exception) throw new \Exception($authentication->getMessage());
+            
+            // Verify identifier
+            if(!in_array($authentication->getAuthType()->getAuth()->getCode(), ['auth_login'])) throw new \Exception($this->lang->trans('auth.not_valid'));
+            
+            // Remove & Flush Authentication
+            $this->entityManager->remove($authentication);
+            $this->entityManager->flush();
+
+            // Add Activity
+            $this->security->addUserActivity($user, 'auth_login', null, $user->getMode());
+
+            // Update Session
+            $this->security->updateSession($user);
+
+            // Remove Api User in session
+            $this->session->remove('apiUser');
+
+            // App Authenticate
+            if($appAuth) return $this->userAuthenticate(true, $user);
+
+            // API Authenticate
+            $token = $this->jwtToken->create($user);
+
+            // Add Token Data
+            $response['type'] = 'Bearer';
+            $response['token'] = $token;
+
+            // Return Response
+            return ResponseUtil::response($jsonResponse, $user, 200, $response, $this->lang->trans('auth.success'));
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return ResponseUtil::response($jsonResponse, $th, 400, null, $th->getMessage());
+        }
+    }
+
+    /**
      * User Authentication
      * 
      * This is used to authenticate
@@ -308,7 +297,7 @@ class AuthService
             $this->session->set('_security_main', serialize($token));
 
             // Return Response
-            return ResponseUtil::response($jsonResponse, $user, 200, ['user' => $user->getFullName(), 'email' => $user->getEmail()], 'Authentication Successful');
+            return ResponseUtil::response($jsonResponse, $user, 200, ['user' => $user->getFullName(), 'email' => $user->getEmail()], $this->lang->trans('auth.success'));
 
         } catch (\Exception $th) {
             //throw $th;
@@ -523,7 +512,7 @@ class AuthService
                 // Return Verify
                 return $verify;
             }
-
+            
             // Prepaire Auth Verify
             $verify = new AuthVerify();
 

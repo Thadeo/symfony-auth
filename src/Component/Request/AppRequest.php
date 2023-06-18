@@ -54,4 +54,12 @@ class AppRequest
     {
         return $this->request()->getContent();
     }
+
+    /**
+     * Get Session
+     */
+    public function getSession()
+    {
+        return $this->request()->getSession();
+    }
 }

@@ -23,3 +23,5 @@ auth.not_active: Authentication not active
 auth.not_valid: Authentication not valid
 auth.confirm_token: Kind check your auth type you select and verify a token
 auth.success: Authentication successful
+auth.api.success: Authentication successful
+auth.api.unauthorized: Authentication failed

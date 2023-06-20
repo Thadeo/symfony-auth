@@ -3,7 +3,10 @@ namespace App\EventListener;
 
 use App\Component\Util\ResponseUtil;
 use App\Service\AuthService;
+use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationFailureEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationSuccessEvent;
+use Lexik\Bundle\JWTAuthenticationBundle\Response\JWTAuthenticationFailureResponse;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -48,7 +51,7 @@ class ApiJWTEventListener
             $auth = $this->auth->factorAllTypeAuth($user, 'auth_login');
 
             // Set user in session
-            $this->session->set('apiUser', $user);
+            $this->session->set('apiUser', $user->getEmail());
 
             // Add Event Data
             $event->setData($auth);
@@ -62,5 +65,18 @@ class ApiJWTEventListener
 
             $event->setData(ResponseUtil::jsonResponse(200, $response, $this->lang->trans('auth.api.success')));
         }
+    }
+
+    /**
+     * @param AuthenticationFailureEvent $event
+     */
+    public function onAuthenticationFailureResponse(AuthenticationFailureEvent $event)
+    {
+        $response = new JWTAuthenticationFailureResponse($event->getException()->getMessage());
+        
+        // Change Response Data
+        $response->setJson(json_encode(ResponseUtil::jsonResponse(401, null, $event->getException()->getMessage())));
+
+        $event->setResponse($response);
     }
 }

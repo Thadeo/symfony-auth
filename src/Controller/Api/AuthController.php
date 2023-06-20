@@ -5,6 +5,7 @@ namespace App\Controller\Api;
 use App\Component\Request\AppRequest;
 use App\Component\Util\EntityUtil;
 use App\Component\Util\ResponseUtil;
+use App\Entity\User;
 use App\Service\AuthService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -58,7 +59,8 @@ class AuthController extends AbstractController
     public function factorAuthSubmit(
         AppRequest $request,
         AuthService $auth,
-        TranslatorInterface $lang
+        TranslatorInterface $lang,
+        EntityManagerInterface $entityManager
     ): Response
     {
         // Check if user available in session
@@ -71,9 +73,12 @@ class AuthController extends AbstractController
 
         // Verify Validation
         if(!empty($validate['errors'])) return $this->json($validate, 400);
+
+        // Get User
+        $user = $entityManager->getRepository(User::class)->findOneBy(['email' => $request->getSession()->get('apiUser')]);
         
         // Auth
-        $authUser = $auth->factorAuthSubmit(true, $request->getSession()->get('apiUser'), 'auth_login', $validate['identifier']);
+        $authUser = $auth->factorAuthSubmit(true, $user, 'auth_login', $validate['identifier']);
 
         // Return Response
         return $this->json($authUser, $authUser['status']);
@@ -88,7 +93,8 @@ class AuthController extends AbstractController
     public function factorAuthConfirm(
         AppRequest $request,
         AuthService $auth,
-        TranslatorInterface $lang
+        TranslatorInterface $lang,
+        EntityManagerInterface $entityManager
     ): Response
     {
         // Check if user available in session
@@ -102,13 +108,16 @@ class AuthController extends AbstractController
 
         // Verify Validation
         if(!empty($validate['errors'])) return $this->json($validate, 400);
+
+        // Get User
+        $user = $entityManager->getRepository(User::class)->findOneBy(['email' => $request->getSession()->get('apiUser')]);
         
         // Allow App to Authenticate
         // This is option if you plan to use in web form, system should session and no api token return
         $isApp = (isset($validate['isApp'])) ? true : false;
 
         // Auth
-        $authUser = $auth->userLoginFactorConfirm(true, $request->getSession()->get('apiUser'), $isApp, $validate['identifier'], $validate['token']);
+        $authUser = $auth->userLoginFactorConfirm(true, $user, $isApp, $validate['identifier'], $validate['token']);
 
         // Return Response
         return $this->json($authUser, $authUser['status']);
@@ -123,7 +132,8 @@ class AuthController extends AbstractController
     public function forgetPassword(
         AppRequest $request,
         AuthService $auth,
-        TranslatorInterface $lang
+        TranslatorInterface $lang,
+        EntityManagerInterface $entityManager
     ): Response
     {
 
@@ -140,8 +150,11 @@ class AuthController extends AbstractController
         // Verify Validation
         if(!empty($validate['errors'])) return $this->json($validate, 400);
 
+        // Get User
+        $user = $entityManager->getRepository(User::class)->findOneBy(['email' => $request->getSession()->get('apiUser')]);
+
         // Auth
-        $authUser = $auth->forgetUserPassword(true, $request->getSession()->get('apiUser'), $validate['identifier'], $validate['token'], $validate['password']);
+        $authUser = $auth->forgetUserPassword(true, $user, $validate['identifier'], $validate['token'], $validate['password']);
 
         // Return Response
         return $this->json($authUser, $authUser['status']);
@@ -195,7 +208,8 @@ class AuthController extends AbstractController
     public function forgetPasswordFactorSubmit(
         AppRequest $request,
         AuthService $auth,
-        TranslatorInterface $lang
+        TranslatorInterface $lang,
+        EntityManagerInterface $entityManager
     ): Response
     {
 
@@ -209,9 +223,12 @@ class AuthController extends AbstractController
 
         // Verify Validation
         if(!empty($validate['errors'])) return $this->json($validate, 400);
+
+        // Get User
+        $user = $entityManager->getRepository(User::class)->findOneBy(['email' => $request->getSession()->get('apiUser')]);
         
         // Auth
-        $authUser = $auth->factorAuthSubmit(true, $request->getSession()->get('apiUser'), 'auth_reset_password', $validate['identifier']);
+        $authUser = $auth->factorAuthSubmit(true, $user, 'auth_reset_password', $validate['identifier']);
 
         // Return Response
         return $this->json($authUser, $authUser['status']);

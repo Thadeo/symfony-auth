@@ -27,6 +27,7 @@ class AuthController extends AbstractController
     ): Response
     {
         $validate = $request->validate([
+            'account_type' => 'required|string',
             'country_code' => 'required|string',
             'first_name' => 'required|string',
             'middle_name' => 'required|string',
@@ -40,6 +41,7 @@ class AuthController extends AbstractController
         
         // Register User
         $register = $auth->registerUser(true,
+                        $validate['account_type'],
                         $validate['country_code'],
                         $validate['first_name'],
                         $validate['middle_name'],
@@ -189,8 +191,8 @@ class AuthController extends AbstractController
         // User not found
         if($user instanceof \Exception) return $this->json(ResponseUtil::jsonResponse(401, null, $user->getMessage()), 401);
         
-        // Set User in session
-        $request->getSession()->set('apiUser', $user);
+        // Set User email in session
+        $request->getSession()->set('apiUser', $validate['email']);
 
         // Auth
         $authUser = $auth->factorAllTypeAuth($user, 'auth_reset_password');

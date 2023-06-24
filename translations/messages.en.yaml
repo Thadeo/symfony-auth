@@ -25,3 +25,8 @@ auth.confirm_token: Kind check your auth type you select and verify a token
 auth.success: Authentication successful
 auth.api.success: Authentication successful
 auth.api.unauthorized: Authentication failed
+
+# ROLES
+role.not_found: Role not defined
+role.action.success: Successful
+role.permission.not_found: Role permission not found

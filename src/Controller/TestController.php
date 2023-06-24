@@ -52,7 +52,7 @@ class TestController extends AbstractController
         return new Response(json_encode($modules), Response::HTTP_OK, ['Content-Type' => 'application/json']);
     }
 
-    #[Route('/test/validate', name: 'api_test_validate')]
+    #[Route('/api/validate', name: 'api_test_validate')]
     public function testValidate(
         AppRequest $request
     ): Response

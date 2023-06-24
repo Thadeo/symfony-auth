@@ -8,6 +8,7 @@ use App\Entity\AuthType;
 use App\Entity\AuthVerify;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -18,20 +19,19 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class AuthService
 {
     private $entityManager;
-    private $userPasswordHash;
-    private $tokenStorage;
     private $session;
-    private $lang;
+    private $roles;
 
     public function __construct(
         EntityManagerInterface $entityManager,
-        UserPasswordHasherInterface $userPasswordHash,
-        TokenStorageInterface $tokenStorage,
+        private UserPasswordHasherInterface $userPasswordHash,
+        private TokenStorageInterface $tokenStorage,
         private RequestStack $requestStack,
-        TranslatorInterface $lang,
+        private TranslatorInterface $lang,
         private SettingService $setting,
         private SecurityService $security,
-        private JWTTokenManagerInterface $jwtToken
+        private JWTTokenManagerInterface $jwtToken,
+        RolesService $roles
     )
     {
         $this->entityManager = $entityManager;
@@ -41,6 +41,7 @@ class AuthService
         $this->setting = $setting;
         $this->security = $security;
         $this->jwtToken = $jwtToken;
+        $this->roles = $roles;
 
         // We use request stack to get session because - because 
         // SessionInterface it cause issue when we access in controller
@@ -53,6 +54,7 @@ class AuthService
      * This is used to register new customer
      * 
      * @param bool jsonResponse
+     * @param string accounttype
      * @param string countrycode
      * @param string firstname
      * @param string middlename
@@ -62,6 +64,7 @@ class AuthService
      */
     public function registerUser(
         bool $jsonResponse,
+        string $accountType,
         string $countryCode,
         string $firtName,
         string $middleName,
@@ -71,6 +74,13 @@ class AuthService
     )
     {
         try {
+            
+            // Validate Account Type
+            $accountType = EntityUtil::findOneUserAccountType($this->lang, $this->entityManager, $accountType);
+
+            // Exception
+            if($accountType instanceof \Exception) throw new \Exception($accountType->getMessage());
+
             // Validate Country
             $country = EntityUtil::findOneCountry($this->lang, $this->entityManager, $countryCode);
 
@@ -95,6 +105,7 @@ class AuthService
 
             // Prepaire Data
             $user->setDate(new \DateTime());
+            $user->setAccountType($accountType);
             $user->setFirstName($firtName);
             $user->setMiddleName($middleName);
             $user->setLastName($lastName);
@@ -109,6 +120,19 @@ class AuthService
             // Add User & Flush changes
             $this->entityManager->persist($user);
             $this->entityManager->flush();
+
+            // Add Permission
+            $addRoles = $this->roles->addUserRole(false, $user);
+
+            // Exception
+            if($addRoles instanceof Exception) {
+                // Remove User
+                $this->entityManager->remove($user);
+                $this->entityManager->flush();
+
+                // Exception
+                throw new \Exception($addRoles->getMessage());
+            }
 
             // Add Activity
             $this->security->addUserActivity($user, 'auth_register', null, $user->getMode());

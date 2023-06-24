@@ -2,9 +2,6 @@
 namespace App\Service;
 
 use App\Component\Util\EntityUtil;
-use App\Component\Util\GenerateUtil;
-use App\Entity\AuthType;
-use App\Entity\AuthVerify;
 use App\Entity\User;
 use App\Entity\UserActivity;
 use App\Entity\UserActivityCategory;
@@ -17,15 +14,13 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class SecurityService
 {
     private $entityManager;
-    private $tokenStorage;
     private $session;
-    private $lang;
 
     public function __construct(
         EntityManagerInterface $entityManager,
-        TokenStorageInterface $tokenStorage,
+        private TokenStorageInterface $tokenStorage,
         private RequestStack $requestStack,
-        TranslatorInterface $lang,
+        private TranslatorInterface $lang,
         private SettingService $setting
     )
     {

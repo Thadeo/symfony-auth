@@ -7,8 +7,10 @@ use App\Entity\AuthTypeProvider;
 use App\Entity\AuthVerify;
 use App\Entity\AuthWayProvider;
 use App\Entity\Country;
+use App\Entity\Roles;
 use App\Entity\Sessions;
 use App\Entity\User;
+use App\Entity\UserAccountType;
 use App\Entity\UserDevices;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -270,6 +272,8 @@ class EntityUtil
      * 
      * @param EntityManagerInterface entitymanager
      * @param string email
+     * 
+     * @return User
      */
     public static function findOneUser(
         TranslatorInterface $lang,
@@ -295,10 +299,43 @@ class EntityUtil
     }
 
     /**
+     * Find One User Account Type
+     * 
+     * @param EntityManagerInterface entitymanager
+     * @param string code
+     * 
+     * @return UserAccountType
+     */
+    public static function findOneUserAccountType(
+        TranslatorInterface $lang,
+        EntityManagerInterface $entityManager,
+        string $code = null
+    )
+    {
+         try {
+
+            // Find Account Type
+            $accountType = $entityManager->getRepository(UserAccountType::class)->findOneBy(['code' => $code]);
+
+            // Account Type not exist
+            if(!$accountType) throw new \Exception("Account Type $code not exist");
+
+            // Return Account Type
+            return $accountType;
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return $th;
+        }
+    }
+
+    /**
      * Find One Country
      * 
      * @param EntityManagerInterface entitymanager
-     * @param array code
+     * @param string code
+     * 
+     * @return Country
      */
     public static function findOneCountry(
         TranslatorInterface $lang,
@@ -385,6 +422,38 @@ class EntityUtil
 
             // Return User
             return $session;
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return $th;
+        }
+    }
+
+    /**
+     * Find One Role By User Account Type
+     * 
+     * @param TranslatorInterface lang
+     * @param EntityManagerInterface entitymanager
+     * @param UserAccountType account
+     * 
+     * @return Roles
+     */
+    public static function findOneRoleByUserAccountType(
+        TranslatorInterface $lang,
+        EntityManagerInterface $entityManager,
+        UserAccountType $account
+    )
+    {
+         try {
+
+            // Find Role
+            $role = $entityManager->getRepository(Roles::class)->findOneBy(['code' => $account->getCode()]);
+
+            // Role Type not exist
+            if(!$role) throw new \Exception("Role for account type ".$account->getCode()." not exist");
+
+            // Return Role
+            return $role;
 
         } catch (\Exception $th) {
             //throw $th;

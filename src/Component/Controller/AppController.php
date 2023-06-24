@@ -43,7 +43,7 @@ class AppController extends AbstractController
     ): Response {
 
         // Find Template
-        $template = $this->setting->getSettingValueByKey('template');
+        $template = $this->setting->getValueByKey('template');
 
         // Verify template
         if(empty($template)) $template = 'default';

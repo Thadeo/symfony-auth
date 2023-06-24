@@ -122,7 +122,7 @@ class AuthService
             $this->entityManager->flush();
 
             // Add Permission
-            $addRoles = $this->roles->addUserRole(false, $user);
+            $addRoles = $this->roles->addUpdateUserRole(false, $user);
 
             // Exception
             if($addRoles instanceof Exception) {

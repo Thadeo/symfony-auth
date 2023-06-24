@@ -219,13 +219,13 @@ class RolesService
     /**
      * User Role
      * 
-     * add role for user
+     * add/update role for user
      * 
      * @param bool jsonResponse
      * @param User user
      * @param UserCustomRoles customRole
      */
-    public function addUserRole(
+    public function addUpdateUserRole(
         bool $jsonResponse,
         User $user,
         UserCustomRoles $customRole = null

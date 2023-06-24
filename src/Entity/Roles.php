@@ -37,6 +37,9 @@ class Roles
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $updatedDate = null;
 
+    #[ORM\ManyToOne(inversedBy: 'roles')]
+    private ?UserAccountType $accountType = null;
+
     public function __construct()
     {
         $this->rolesPermissions = new ArrayCollection();
@@ -145,6 +148,18 @@ class Roles
     public function setUpdatedDate(\DateTimeInterface $updatedDate): self
     {
         $this->updatedDate = $updatedDate;
+
+        return $this;
+    }
+
+    public function getAccountType(): ?UserAccountType
+    {
+        return $this->accountType;
+    }
+
+    public function setAccountType(?UserAccountType $accountType): self
+    {
+        $this->accountType = $accountType;
 
         return $this;
     }

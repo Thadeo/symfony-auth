@@ -447,7 +447,7 @@ class EntityUtil
          try {
 
             // Find Role
-            $role = $entityManager->getRepository(Roles::class)->findOneBy(['code' => $account->getCode()]);
+            $role = $entityManager->getRepository(Roles::class)->findOneBy(['accountType' => $account]);
 
             // Role Type not exist
             if(!$role) throw new \Exception("Role for account type ".$account->getCode()." not exist");

@@ -43,4 +43,14 @@ class BaseController extends AbstractController
         // Render the template
         return $this->render($template.'/'.$view, $parameters);
     }
+
+    /**
+     * Returns a JsonResponse that uses the serializer component if enabled, or json_encode.
+     *
+     * @param int $status The HTTP status code (200 "OK" by default)
+     */
+    protected function appJson(array $data)
+    {
+        return $this->json($data, $data['status']);
+    }
 }

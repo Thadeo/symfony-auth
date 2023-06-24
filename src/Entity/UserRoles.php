@@ -26,9 +26,6 @@ class UserRoles
     #[ORM\ManyToOne]
     private ?UserCustomRoles $custom = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $type = null;
-
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $updatedDate = null;
 
@@ -81,18 +78,6 @@ class UserRoles
     public function setCustom(?UserCustomRoles $custom): self
     {
         $this->custom = $custom;
-
-        return $this;
-    }
-
-    public function getType(): ?string
-    {
-        return $this->type;
-    }
-
-    public function setType(string $type): self
-    {
-        $this->type = $type;
 
         return $this;
     }

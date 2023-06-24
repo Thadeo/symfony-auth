@@ -1,7 +1,8 @@
 # VALIDATION
 validation.errors: Validation errors
-validation.data.empty: post request data & data rules command must be in array, not empty
-validation.data.key_not_exist: data %key% not exist in rules command
+validation.data.empty: post request data must be in array, not empty
+validation.data.key_not_exist: data %key% not exist in request body
+validation.rules.empty: data rules command must be in array, not empty
 validation.rules.value_not_string_array: Sorry rules value must be in array or string divided with | e.g required|string
 validation.rules.key_not_exist: rule key %key% not exist, available rules is %rules%
 validation.rule.value.required: value is required
@@ -30,3 +31,8 @@ auth.api.unauthorized: Authentication failed
 role.not_found: Role not defined
 role.action.success: Successful
 role.permission.not_found: Role permission not found
+
+# ACCOUNT
+account.action.success: Successful
+account.phone.exist: Your phone number is already exist
+account.phone.no_primary.remove: You can't remove primary phone, set other phone as primary then try to remove again

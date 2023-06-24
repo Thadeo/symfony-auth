@@ -31,6 +31,9 @@ class UserAccountType
     #[ORM\OneToMany(mappedBy: 'accountType', targetEntity: Roles::class)]
     private Collection $roles;
 
+    #[ORM\Column]
+    private ?bool $isUserAccess = null;
+
     public function __construct()
     {
         $this->roles = new ArrayCollection();
@@ -115,6 +118,18 @@ class UserAccountType
                 $role->setAccountType(null);
             }
         }
+
+        return $this;
+    }
+
+    public function isIsUserAccess(): ?bool
+    {
+        return $this->isUserAccess;
+    }
+
+    public function setIsUserAccess(bool $isUserAccess): self
+    {
+        $this->isUserAccess = $isUserAccess;
 
         return $this;
     }

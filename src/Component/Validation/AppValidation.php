@@ -33,9 +33,12 @@ class AppValidation
             // Hold errors
             $errors = [];
             
-            // Verify data
+            // Verify request data
             if(empty($ruleData) || empty($requestData)) throw new ValidationException($this->lang->trans('validation.data.empty'));
             
+            // Verify rule data
+            if(empty($ruleData)) throw new ValidationException($this->lang->trans('validation.rules.empty'));
+
             // Request Data
             foreach ($requestData as $requestKey => $requestValue) {
                 
@@ -167,8 +170,8 @@ class AppValidation
      * Validate Rules
      * 
      * @param string requestValue
-     * @param string dataKey
-     * @param array rules
+     * @param string ruleKey
+     * @param array ruleValue
      */
     protected function validateRules(
         string $requestValue,

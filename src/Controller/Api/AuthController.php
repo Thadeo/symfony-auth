@@ -2,18 +2,19 @@
 
 namespace App\Controller\Api;
 
+use App\Component\Controller\BaseController;
 use App\Component\Request\AppRequest;
 use App\Component\Util\EntityUtil;
 use App\Component\Util\ResponseUtil;
 use App\Entity\User;
+use App\Service\AccountService;
 use App\Service\AuthService;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class AuthController extends AbstractController
+class AuthController extends BaseController
 {
     /**
      * Auth Register
@@ -37,7 +38,7 @@ class AuthController extends AbstractController
         ]);
 
         // Verify Validation
-        if(!empty($validate['errors'])) return $this->json($validate, 400);;
+        if(!empty($validate['errors'])) return $this->json($validate, 400);
         
         // Register User
         $register = $auth->registerUser(true,
@@ -48,8 +49,26 @@ class AuthController extends AbstractController
                         $validate['last_name'],
                         $validate['email'],
                         $validate['password']);
+
         // Return Response
-        return new Response(json_encode($register), Response::HTTP_OK, ['Content-Type' => 'application/json']);
+        return $this->appJson($register);
+    }
+
+    /**
+     * Account Type
+     * 
+     * Fetch Account Type
+     */
+    #[Route('/api/auth/fetch/account-type', name: 'api_auth_fetch_account_type', methods: ['GET'])]
+    public function fetchAccountType(
+        AccountService $account
+    ): Response
+    {
+        // Fetch Account
+        $data = $account->allAccountType(true);
+
+        // Return Response
+        return $this->appJson($data);
     }
 
     /**
@@ -83,7 +102,7 @@ class AuthController extends AbstractController
         $authUser = $auth->factorAuthSubmit(true, $user, 'auth_login', $validate['identifier']);
 
         // Return Response
-        return $this->json($authUser, $authUser['status']);
+        return $this->appJson($authUser);
     }
 
     /**
@@ -122,7 +141,7 @@ class AuthController extends AbstractController
         $authUser = $auth->userLoginFactorConfirm(true, $user, $isApp, $validate['identifier'], $validate['token']);
 
         // Return Response
-        return $this->json($authUser, $authUser['status']);
+        return $this->appJson($authUser);
     }
 
     /**
@@ -159,7 +178,7 @@ class AuthController extends AbstractController
         $authUser = $auth->forgetUserPassword(true, $user, $validate['identifier'], $validate['token'], $validate['password']);
 
         // Return Response
-        return $this->json($authUser, $authUser['status']);
+        return $this->appJson($authUser);
     }
 
     /**
@@ -198,7 +217,7 @@ class AuthController extends AbstractController
         $authUser = $auth->factorAllTypeAuth($user, 'auth_reset_password');
 
         // Return Response
-        return $this->json($authUser, $authUser['status']);
+        return $this->appJson($authUser);
     }
 
     /**
@@ -233,6 +252,6 @@ class AuthController extends AbstractController
         $authUser = $auth->factorAuthSubmit(true, $user, 'auth_reset_password', $validate['identifier']);
 
         // Return Response
-        return $this->json($authUser, $authUser['status']);
+        return $this->appJson($authUser);
     }
 }

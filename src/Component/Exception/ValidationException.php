@@ -24,7 +24,7 @@ class ValidationException extends Exception
     public function addData($data)
     {
         // Hold Data
-        $this->data = ['errors' => $data, 'message' => parent::getMessage()];
+        $this->data = ['errors' => (!empty($data)) ? $data : ['body_data' => parent::getMessage()], 'message' => parent::getMessage()];
     }
 
     /**

@@ -12,6 +12,7 @@ use App\Entity\Sessions;
 use App\Entity\User;
 use App\Entity\UserAccountType;
 use App\Entity\UserDevices;
+use App\Entity\UserPhone;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -239,6 +240,7 @@ class EntityUtil
     /**
      * Verify Unique User
      * 
+     * @param TranslatorInterface lang
      * @param EntityManagerInterface entitymanager
      * @param string email
      * 
@@ -270,6 +272,7 @@ class EntityUtil
     /**
      * Find One User
      * 
+     * @param TranslatorInterface lang
      * @param EntityManagerInterface entitymanager
      * @param string email
      * 
@@ -301,21 +304,24 @@ class EntityUtil
     /**
      * Find One User Account Type
      * 
+     * @param TranslatorInterface lang
      * @param EntityManagerInterface entitymanager
      * @param string code
+     * @param bool isUserAccess
      * 
      * @return UserAccountType
      */
     public static function findOneUserAccountType(
         TranslatorInterface $lang,
         EntityManagerInterface $entityManager,
-        string $code = null
+        string $code,
+        bool $isUserAccess = true
     )
     {
          try {
 
             // Find Account Type
-            $accountType = $entityManager->getRepository(UserAccountType::class)->findOneBy(['code' => $code]);
+            $accountType = $entityManager->getRepository(UserAccountType::class)->findOneBy(['code' => $code, 'isUserAccess' => $isUserAccess]);
 
             // Account Type not exist
             if(!$accountType) throw new \Exception("Account Type $code not exist");
@@ -330,8 +336,40 @@ class EntityUtil
     }
 
     /**
+     * Find All User Account Type
+     * 
+     * @param TranslatorInterface lang
+     * @param EntityManagerInterface entitymanager
+     * 
+     * @return UserAccountType
+     */
+    public static function findAllUserAccountType(
+        TranslatorInterface $lang,
+        EntityManagerInterface $entityManager,
+        bool $isUserAccess = true
+    )
+    {
+         try {
+
+            // Find Account Type
+            $accountType = $entityManager->getRepository(UserAccountType::class)->findBy(['isUserAccess' => $isUserAccess]);
+
+            // Account Type not exist
+            if(!$accountType) throw new \Exception("Account type not available");
+
+            // Return Account Type
+            return $accountType;
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return $th;
+        }
+    }
+
+    /**
      * Find One Country
      * 
+     * @param TranslatorInterface lang
      * @param EntityManagerInterface entitymanager
      * @param string code
      * 
@@ -401,6 +439,7 @@ class EntityUtil
     /**
      * Find One Session
      * 
+     * @param TranslatorInterface lang
      * @param EntityManagerInterface entitymanager
      * @param string sessionid
      * 
@@ -454,6 +493,70 @@ class EntityUtil
 
             // Return Role
             return $role;
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return $th;
+        }
+    }
+
+    /**
+     * Find Primary Phone
+     * 
+     * @param TranslatorInterface lang
+     * @param EntityManagerInterface entitymanager
+     * @param User user
+     * 
+     * @return UserPhone
+     */
+    public static function findPrimaryPhone(
+        TranslatorInterface $lang,
+        EntityManagerInterface $entityManager,
+        User $user
+    )
+    {
+        try {
+
+            // Find Phone
+            $phone = $entityManager->getRepository(UserPhone::class)->findOneBy(['user' => $user, 'isPrimary' => true]);
+
+            // Phone not exist
+            if(!$phone) throw new \Exception("Primary Phone not exist");
+
+            // Return Phone
+            return $phone;
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return $th;
+        }
+    }
+
+    /**
+     * Find One Phone
+     * 
+     * @param TranslatorInterface lang
+     * @param EntityManagerInterface entitymanager
+     * 
+     * @return UserPhone
+     */
+    public static function findOnePhone(
+        TranslatorInterface $lang,
+        EntityManagerInterface $entityManager,
+        User $user,
+        string $phoneNumber
+    )
+    {
+        try {
+
+            // Find Phone
+            $phone = $entityManager->getRepository(UserPhone::class)->findOneBy(['user' => $user, 'phone' => $phoneNumber]);
+
+            // Phone not exist
+            if(!$phone) throw new \Exception("Phone $phoneNumber not exist");
+
+            // Return Phone
+            return $phone;
 
         } catch (\Exception $th) {
             //throw $th;

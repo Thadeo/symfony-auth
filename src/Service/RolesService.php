@@ -65,7 +65,7 @@ class RolesService
         $role
     )
     {
-        // Permission
+        // Role
         $data = [
             'name' => $role->getName(),
             'code' => $role->getCode(),
@@ -238,6 +238,9 @@ class RolesService
             // Exception
             if($findRole instanceof \Exception) throw new \Exception($findRole->getMessage());
 
+            // Get Roles
+            $roles = ($customRole) ? $customRole : $findRole;
+
             // Update role if already added
             if($user->getRole()) {
 
@@ -254,7 +257,7 @@ class RolesService
                 $this->entityManager->flush();
 
                 // Return Response
-                return ResponseUtil::response($jsonResponse, $user->getRole(), 200, self::formatResponseRole($user->getRole()), $this->lang->trans('role.action.success'));
+                return ResponseUtil::response($jsonResponse, $roles, 200, self::formatResponseRole($roles), $this->lang->trans('role.action.success'));
             }
             
             // Prepaire & add new Role
@@ -274,7 +277,7 @@ class RolesService
             $this->entityManager->flush();
 
             // Return Response
-            return ResponseUtil::response($jsonResponse, $role, 200, self::formatResponseRole($role), $this->lang->trans('role.action.success'));
+            return ResponseUtil::response($jsonResponse, $roles, 200, self::formatResponseRole($roles), $this->lang->trans('role.action.success'));
 
         } catch (\Exception $th) {
             //throw $th;

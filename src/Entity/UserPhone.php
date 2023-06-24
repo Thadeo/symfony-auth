@@ -100,7 +100,7 @@ class UserPhone
         return $this;
     }
 
-    public function isIsPrimary(): ?bool
+    public function isPrimary(): ?bool
     {
         return $this->isPrimary;
     }

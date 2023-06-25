@@ -11,6 +11,33 @@ use Symfony\Component\Routing\Annotation\Route;
 class AccountController extends BaseController
 {
     /**
+     * All Phone
+     * 
+     * Get all Phone
+     */
+    #[Route('/api/account/all/phone', name: 'api_account_all_phone', methods: ['POST'])]
+    public function allPhone(
+        AppRequest $request,
+        AccountService $account
+    ): Response
+    {
+        $validate = $request->validate([
+            'search' => 'string',
+            'country' => 'string',
+            'isPrimary' => 'bool'
+        ]);
+
+        // Verify Validation
+        if(!empty($validate['errors'])) return $this->json($validate, 400);
+        
+        // Phone
+        $phone = $account->allPhone(true, $this->getUser(), $validate['search'], $validate['country'], $validate['isPrimary']);
+
+        // Return Response
+        return $this->appJson($phone);
+    }
+
+    /**
      * Add Phone
      * 
      * phone number

@@ -65,6 +65,52 @@ class AccountService
     /**
      * User Phone
      * 
+     * Get All Phone
+     * 
+     * @param bool jsonResponse
+     * @param User user
+     * @param string search
+     * @param string country
+     * @param bool isPrimary
+     * 
+     */
+    public function allPhone(
+        bool $jsonResponse,
+        User $user,
+        string $search = null,
+        string $country = null,
+        bool $isPrimary = null
+    )
+    {
+        try {
+
+            // Find phone
+            $phones = EntityUtil::findAllPhone($this->lang, $this->entityManager, $user, $search, $country, $isPrimary);
+
+            // Exception
+            if($phones instanceof \Exception) throw new \Exception($phones->getMessage());
+
+            // Hold Data
+            $data = [];
+
+            // Loop all phone
+            foreach ($phones as $key => $phone) {
+                # code...
+                $data[] = self::formatPhoneDetails($phone);
+            }
+
+            // Return Response
+            return ResponseUtil::response($jsonResponse, $phones, 200, $data, $this->lang->trans('account.action.success'));
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return ResponseUtil::response($jsonResponse, $th, 400, [], $th->getMessage());
+        }
+    }
+
+    /**
+     * User Phone
+     * 
      * Add Phone
      * 
      * @param bool jsonResponse
@@ -330,5 +376,72 @@ class AccountService
 
         // Return Data
         return $data;
+    }
+
+    ####################################### ADDRESS ######################################
+    ######################################################################################
+
+    /**
+     * User Address
+     * 
+     * Add Address
+     * 
+     * @param bool jsonResponse
+     * @param User user
+     * @param string country
+     * @param string phoneNumber
+     */
+    public function addAddress(
+        bool $jsonResponse,
+        User $user,
+        string $country,
+        string $phoneNumber
+    )
+    {
+        try {
+
+            // Find Country
+            $country = EntityUtil::findOneCountry($this->lang, $this->entityManager, $country);
+
+            // Exception
+            if($country instanceof \Exception) throw new \Exception($country->getMessage());
+
+            // Format phone number
+            $phoneNumber = FormatUtil::phoneNumber($country->getDialCode(), $phoneNumber);
+
+            // Find phone if exist
+            $findPhone = EntityUtil::findOnePhone($this->lang, $this->entityManager, $user, $phoneNumber);
+
+            // Phone Exist
+            if(!$findPhone instanceof \Exception) throw new \Exception($this->lang->trans('account.phone.exist'));
+            
+
+            // Find Primary
+            $findPrimary = EntityUtil::findPrimaryPhone($this->lang, $this->entityManager, $user);
+
+            // Is Primary
+            $isPrimary = ($findPrimary instanceof \Exception) ? true : false;
+
+            // Prepaired DB
+            $phone = new UserPhone();
+            $phone->setUser($user);
+            $phone->setDate(new \DateTime());
+            $phone->setCountry($country);
+            $phone->setPhone($phoneNumber);
+            $phone->setIsPrimary($isPrimary);
+            $phone->setActive(true);
+            $phone->setUpdatedDate(new \DateTime());
+
+            // Add Date & Flush Changes
+            $this->entityManager->persist($phone);
+            $this->entityManager->flush();
+            
+            // Return Response
+            return ResponseUtil::response($jsonResponse, $phone, 200, self::formatPhoneDetails($phone), $this->lang->trans('account.action.success'));
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return ResponseUtil::response($jsonResponse, $th, 400, [], $th->getMessage());
+        }
     }
 }

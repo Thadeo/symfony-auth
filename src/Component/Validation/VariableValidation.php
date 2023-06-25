@@ -161,6 +161,20 @@ class VariableValidation
     }
 
     /**
+     * Boolean
+     * 
+     * @param string bool
+     */
+    public static function isBool($bool): bool
+    {
+        // Verify if is bool
+        if(!is_bool($bool)) false;
+
+        // Return Response
+        return true;
+    }
+
+    /**
      * Phone
      * 
      * @param string phone

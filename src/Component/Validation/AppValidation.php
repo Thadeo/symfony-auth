@@ -9,7 +9,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  */
 class AppValidation
 {
-    private $ruleKeys = ['required', 'numeric', 'string', 'amount', 'min', 'max', 'phone', 'email', 'url'];
+    private $ruleKeys = ['required', 'numeric', 'string', 'amount', 'bool', 'min', 'max', 'phone', 'email', 'url'];
 
     public function __construct(
         private TranslatorInterface $lang
@@ -77,8 +77,9 @@ class AppValidation
 
             // Verify rules key if available in request Body
             foreach ($ruleData as $rulekey => $rulevalue) {
-                # Key not exist
-                if(!array_key_exists($rulekey, $requestData)) $errors[$rulekey][] = $this->lang->trans('validation.data.key_not_exist', ['%key%' => $rulekey]);
+                # Key not exist set as optional
+                if(!array_key_exists($rulekey, $requestData)) $requestData[$rulekey] = null;
+                //if(!array_key_exists($rulekey, $requestData)) $errors[$rulekey][] = $this->lang->trans('validation.data.key_not_exist', ['%key%' => $rulekey]);
             }//
 
             // Verify errors if exist
@@ -202,6 +203,11 @@ class AppValidation
             # Check amount
             if($ruleKey == 'amount' && !empty($requestValue) && !VariableValidation::isAmount($requestValue)) {
                 $errors = $this->lang->trans('validation.rule.value.amount');
+            }
+
+            # Check boolean
+            if($ruleKey == 'bool' && !empty($requestValue) && !VariableValidation::isBool($requestValue)) {
+                $errors = $this->lang->trans('validation.rule.value.bool');
             }
 
             # Check phone

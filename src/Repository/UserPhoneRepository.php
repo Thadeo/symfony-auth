@@ -2,6 +2,8 @@
 
 namespace App\Repository;
 
+use App\Entity\Country;
+use App\Entity\User;
 use App\Entity\UserPhone;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -39,28 +41,56 @@ class UserPhoneRepository extends ServiceEntityRepository
         }
     }
 
-//    /**
-//     * @return UserPhone[] Returns an array of UserPhone objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('u')
-//            ->andWhere('u.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('u.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    /**
+     * Find All Phone
+     * 
+     * @param User user
+     * @param string search
+     * @param string country
+     * @param bool isPrimary
+     */
+    public function findAllPhone(
+        User $user,
+        string $search = null,
+        string $country = null,
+        bool $isPrimary = null
+    )
+    {
+        $query = $this->createQueryBuilder('a')->select('DISTINCT a')
+            ->join(Country::class, 'co', 
+            \Doctrine\ORM\Query\Expr\Join::WITH, 'a.country = co.id');
 
-//    public function findOneBySomeField($value): ?UserPhone
-//    {
-//        return $this->createQueryBuilder('u')
-//            ->andWhere('u.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+        // Find device
+        if($country) {
+            $query->andWhere('co.code = :code')
+                  ->setParameter('code', $country);
+        }
+
+        // Find user
+        if($user) {
+            $query->andWhere('a.user = :user')
+                  ->setParameter('user', $user);
+        }
+
+        // Find search
+        if($search) {
+            $query->andWhere('a.phone = :phone')
+                  ->setParameter('phone', $search);
+        }
+
+        // Find isPrimary
+        if(is_bool($isPrimary)) {
+            $query->andWhere('a.isPrimary = :isPrimary')
+                  ->setParameter('isPrimary', $isPrimary);
+        }
+
+        // Find 10 Result
+        $query->setMaxResults(10);
+
+        // Query Result
+        $result = $query->getQuery()->getResult();
+
+        // Return Result
+        return $result;
+    }
 }

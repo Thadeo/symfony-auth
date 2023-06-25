@@ -9,6 +9,7 @@ validation.rule.value.required: value is required
 validation.rule.value.string: value must be a string
 validation.rule.value.numeric: value must be a numeric
 validation.rule.value.amount: value must be a valid amount formated eg. 20 or 20.00
+validation.rule.value.bool: value must be a valid boolean
 validation.rule.value.phone: value must be a valid phone
 validation.rule.value.email: invalid email address
 validation.rule.value.url: value must be a valid url

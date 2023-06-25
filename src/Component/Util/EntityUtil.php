@@ -563,4 +563,40 @@ class EntityUtil
             return $th;
         }
     }
+
+    /**
+     * Find All Phone
+     * 
+     * @param TranslatorInterface lang
+     * @param EntityManagerInterface entitymanager
+     * @param string search
+     * @param string country
+     * @param bool isPrimary
+     * 
+     */
+    public static function findAllPhone(
+        TranslatorInterface $lang,
+        EntityManagerInterface $entityManager,
+        User $user,
+        string $search = null,
+        string $country = null,
+        bool $isPrimary = null
+    )
+    {
+        try {
+
+            // Find Phone
+            $phone = $entityManager->getRepository(UserPhone::class)->findAllPhone($user, $search, $country, $isPrimary);
+
+            // Phone not exist
+            if(!$phone) throw new \Exception("Phones not found");
+
+            // Return Phone
+            return $phone;
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return $th;
+        }
+    }
 }

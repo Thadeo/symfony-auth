@@ -20,11 +20,14 @@ class UserAddress
     #[ORM\ManyToOne(inversedBy: 'userAddresses')]
     private ?User $user = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $city = null;
+    #[ORM\ManyToOne]
+    private ?Country $country = null;
 
     #[ORM\ManyToOne]
     private ?CountryState $state = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $city = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $address = null;
@@ -46,6 +49,9 @@ class UserAddress
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $updatedDate = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $identifier = null;
 
     public function getId(): ?int
     {
@@ -76,14 +82,14 @@ class UserAddress
         return $this;
     }
 
-    public function getCity(): ?string
+    public function getCountry(): ?Country
     {
-        return $this->city;
+        return $this->country;
     }
 
-    public function setCity(?string $city): self
+    public function setCountry(?Country $country): self
     {
-        $this->city = $city;
+        $this->country = $country;
 
         return $this;
     }
@@ -96,6 +102,18 @@ class UserAddress
     public function setState(?CountryState $state): self
     {
         $this->state = $state;
+
+        return $this;
+    }
+
+    public function getCity(): ?string
+    {
+        return $this->city;
+    }
+
+    public function setCity(?string $city): self
+    {
+        $this->city = $city;
 
         return $this;
     }
@@ -148,7 +166,7 @@ class UserAddress
         return $this;
     }
 
-    public function isIsPrimary(): ?bool
+    public function isPrimary(): ?bool
     {
         return $this->isPrimary;
     }
@@ -160,7 +178,7 @@ class UserAddress
         return $this;
     }
 
-    public function isIsVerified(): ?bool
+    public function isVerified(): ?bool
     {
         return $this->isVerified;
     }
@@ -180,6 +198,18 @@ class UserAddress
     public function setUpdatedDate(\DateTimeInterface $updatedDate): self
     {
         $this->updatedDate = $updatedDate;
+
+        return $this;
+    }
+
+    public function getIdentifier(): ?string
+    {
+        return $this->identifier;
+    }
+
+    public function setIdentifier(?string $identifier): self
+    {
+        $this->identifier = $identifier;
 
         return $this;
     }

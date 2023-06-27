@@ -7,10 +7,12 @@ use App\Entity\AuthTypeProvider;
 use App\Entity\AuthVerify;
 use App\Entity\AuthWayProvider;
 use App\Entity\Country;
+use App\Entity\CountryState;
 use App\Entity\Roles;
 use App\Entity\Sessions;
 use App\Entity\User;
 use App\Entity\UserAccountType;
+use App\Entity\UserAddress;
 use App\Entity\UserDevices;
 use App\Entity\UserPhone;
 use Doctrine\ORM\EntityManagerInterface;
@@ -384,13 +386,47 @@ class EntityUtil
          try {
 
             // Find Country
-            $country = $entityManager->getRepository(Country::class)->findOneBy(['code' => $code]);
+            $country = $entityManager->getRepository(Country::class)->findOneBy(['code' => $code, 'active' => true]);
 
             // Country not exist
             if(!$country) throw new \Exception("Country $code not exist");
 
             // Return Country
             return $country;
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return $th;
+        }
+    }
+
+    /**
+     * Find One Country State
+     * 
+     * @param TranslatorInterface lang
+     * @param EntityManagerInterface entitymanager
+     * @param Country country
+     * @param string code
+     * 
+     * @return CountryState
+     */
+    public static function findOneCountryState(
+        TranslatorInterface $lang,
+        EntityManagerInterface $entityManager,
+        Country $country,
+        string $code
+    )
+    {
+         try {
+
+            // Find Country State
+            $countryState = $entityManager->getRepository(CountryState::class)->findOneBy(['country' => $country, 'code' => $code, 'active' => true]);
+
+            // Country State not exist
+            if(!$countryState) throw new \Exception("Country state $code not exist");
+
+            // Return Country State
+            return $countryState;
 
         } catch (\Exception $th) {
             //throw $th;
@@ -537,6 +573,8 @@ class EntityUtil
      * 
      * @param TranslatorInterface lang
      * @param EntityManagerInterface entitymanager
+     * @param User user
+     * @param string identifier
      * 
      * @return UserPhone
      */
@@ -544,16 +582,16 @@ class EntityUtil
         TranslatorInterface $lang,
         EntityManagerInterface $entityManager,
         User $user,
-        string $phoneNumber
+        string $identifier
     )
     {
         try {
 
             // Find Phone
-            $phone = $entityManager->getRepository(UserPhone::class)->findOneBy(['user' => $user, 'phone' => $phoneNumber]);
+            $phone = $entityManager->getRepository(UserPhone::class)->findOnePhone($user, $identifier);
 
             // Phone not exist
-            if(!$phone) throw new \Exception("Phone $phoneNumber not exist");
+            if(!$phone) throw new \Exception("Phone not exist");
 
             // Return Phone
             return $phone;
@@ -593,6 +631,146 @@ class EntityUtil
 
             // Return Phone
             return $phone;
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return $th;
+        }
+    }
+
+    /**
+     * Find Primary Address
+     * 
+     * @param TranslatorInterface lang
+     * @param EntityManagerInterface entitymanager
+     * @param User user
+     * 
+     * @return UserAddress
+     */
+    public static function findPrimaryAddress(
+        TranslatorInterface $lang,
+        EntityManagerInterface $entityManager,
+        User $user
+    )
+    {
+        try {
+
+            // Find Address
+            $address = $entityManager->getRepository(UserAddress::class)->findOneBy(['user' => $user, 'isPrimary' => true]);
+
+            // Address not exist
+            if(!$address) throw new \Exception("Primary address not exist");
+
+            // Return Address
+            return $address;
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return $th;
+        }
+    }
+
+    /**
+     * Find One Address By Postal Code
+     * 
+     * @param TranslatorInterface lang
+     * @param EntityManagerInterface entitymanager
+     * @param User user,
+     * @param string postalCode
+     * 
+     * @return UserAddress
+     */
+    public static function findOneAddressByPostalCode(
+        TranslatorInterface $lang,
+        EntityManagerInterface $entityManager,
+        User $user,
+        string $postalCode
+    )
+    {
+        try {
+
+            // Find Address
+            $address = $entityManager->getRepository(UserAddress::class)->findOneBy(['user' => $user, 'postalCode' => $postalCode]);
+
+            // Address not exist
+            if(!$address) throw new \Exception("Address not exist");
+
+            // Return Address
+            return $address;
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return $th;
+        }
+    }
+
+    /**
+     * Find One Address
+     * 
+     * @param TranslatorInterface lang
+     * @param EntityManagerInterface entitymanager
+     * @param User user,
+     * @param string identifier
+     * @param bool isActive
+     * 
+     * @return UserAddress
+     */
+    public static function findOneAddress(
+        TranslatorInterface $lang,
+        EntityManagerInterface $entityManager,
+        User $user,
+        string $identifier,
+        bool $isActive = null
+    )
+    {
+        try {
+
+            // Find Address
+            $address = $entityManager->getRepository(UserAddress::class)->findOneAddress($user, $identifier, $isActive);
+
+            // Address not exist
+            if(!$address) throw new \Exception("Address not exist");
+
+            // Return Address
+            return $address;
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return $th;
+        }
+    }
+
+    /**
+     * Find All Address
+     * 
+     * @param TranslatorInterface lang
+     * @param EntityManagerInterface entitymanager
+     * @param string search
+     * @param string country
+     * @param string state
+     * @param bool isPrimary
+     * 
+     */
+    public static function findAllAddress(
+        TranslatorInterface $lang,
+        EntityManagerInterface $entityManager,
+        User $user,
+        string $search = null,
+        string $country = null,
+        string $state = null,
+        bool $isPrimary = null
+    )
+    {
+        try {
+
+            // Find Address
+            $address = $entityManager->getRepository(UserAddress::class)->findAllAddress($user, $search, $country, $state, $isPrimary);
+
+            // Address not exist
+            if(!$address) throw new \Exception("Address not found");
+
+            // Return Address
+            return $address;
 
         } catch (\Exception $th) {
             //throw $th;

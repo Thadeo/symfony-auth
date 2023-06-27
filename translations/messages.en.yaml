@@ -37,3 +37,5 @@ role.permission.not_found: Role permission not found
 account.action.success: Successful
 account.phone.exist: Your phone number is already exist
 account.phone.no_primary.remove: You can't remove primary phone, set other phone as primary then try to remove again
+account.address.exist: Your address is already exist
+account.address.no_primary.remove: You can't remove primary address, set other address as primary then try to remove again

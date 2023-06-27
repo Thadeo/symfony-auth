@@ -42,6 +42,49 @@ class UserPhoneRepository extends ServiceEntityRepository
     }
 
     /**
+     * Find One Phone
+     * 
+     * @param User user
+     * @param string identifier
+     */
+    public function findOnePhone(
+        User $user,
+        string $identifier,
+        bool $isActive = null
+    )
+    {
+        $query = $this->createQueryBuilder('a');
+
+        // Find user
+        if($user) {
+            $query->andWhere('a.user = :user')
+                  ->setParameter('user', $user);
+        }
+
+        // Find search
+        if($identifier) {
+            $query->andWhere('a.identifier = :identifier')
+                  ->orWhere('a.phone = :identifier')
+                  ->setParameter('identifier', $identifier);
+        }
+
+        // Find isActive
+        if(is_bool($isActive)) {
+            $query->andWhere('a.active = :active')
+                  ->setParameter('active', $isActive);
+        }
+
+        // Find One Result
+        $query->setMaxResults(1);
+
+        // Query Result
+        $result = $query->getQuery()->getOneOrNullResult();
+
+        // Return Result
+        return $result;
+    }
+
+    /**
      * Find All Phone
      * 
      * @param User user
@@ -60,7 +103,7 @@ class UserPhoneRepository extends ServiceEntityRepository
             ->join(Country::class, 'co', 
             \Doctrine\ORM\Query\Expr\Join::WITH, 'a.country = co.id');
 
-        // Find device
+        // Find country
         if($country) {
             $query->andWhere('co.code = :code')
                   ->setParameter('code', $country);
@@ -74,8 +117,9 @@ class UserPhoneRepository extends ServiceEntityRepository
 
         // Find search
         if($search) {
-            $query->andWhere('a.phone = :phone')
-                  ->setParameter('phone', $search);
+            $query->andWhere('a.identifier = :identifier')
+                  ->orWhere('a.phone = :identifier')
+                  ->setParameter('identifier', $search);
         }
 
         // Find isPrimary

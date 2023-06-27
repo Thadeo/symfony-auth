@@ -105,6 +105,7 @@ class AuthService
 
             // Prepaire Data
             $user->setDate(new \DateTime());
+            $user->setCountry($country);
             $user->setAccountType($accountType);
             $user->setFirstName($firtName);
             $user->setMiddleName($middleName);

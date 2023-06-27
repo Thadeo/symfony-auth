@@ -39,6 +39,13 @@ class AppValidation
             // Verify rule data
             if(empty($ruleData)) throw new ValidationException($this->lang->trans('validation.rules.empty'));
 
+            // Verify rules key first if available in request Body
+            foreach ($ruleData as $rulekey => $rulevalue) {
+                # Key not exist set as optional
+                if(!array_key_exists($rulekey, $requestData)) $requestData[$rulekey] = null;
+                //if(!array_key_exists($rulekey, $requestData)) $errors[$rulekey][] = $this->lang->trans('validation.data.key_not_exist', ['%key%' => $rulekey]);
+            }//
+
             // Request Data
             foreach ($requestData as $requestKey => $requestValue) {
                 
@@ -75,13 +82,6 @@ class AppValidation
 
             }//
 
-            // Verify rules key if available in request Body
-            foreach ($ruleData as $rulekey => $rulevalue) {
-                # Key not exist set as optional
-                if(!array_key_exists($rulekey, $requestData)) $requestData[$rulekey] = null;
-                //if(!array_key_exists($rulekey, $requestData)) $errors[$rulekey][] = $this->lang->trans('validation.data.key_not_exist', ['%key%' => $rulekey]);
-            }//
-
             // Verify errors if exist
             if(!empty($errors)) throw new ValidationException($this->lang->trans('validation.errors'), $errors);
 
@@ -106,7 +106,7 @@ class AppValidation
      */
     protected function validateValue(
         string $requestKey,
-        string $requestValue,
+        string $requestValue = null,
         array $rules = []
     )
     {
@@ -175,7 +175,7 @@ class AppValidation
      * @param array ruleValue
      */
     protected function validateRules(
-        string $requestValue,
+        string $requestValue = null,
         string $ruleKey,
         string $ruleValue
     )

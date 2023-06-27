@@ -18,7 +18,7 @@ class CountryState
     private ?\DateTimeInterface $date = null;
 
     #[ORM\ManyToOne(inversedBy: 'countryStates')]
-    private ?Country $Country = null;
+    private ?Country $country = null;
 
     #[ORM\Column(length: 255)]
     private ?string $name = null;
@@ -28,6 +28,9 @@ class CountryState
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $updatedDate = null;
+
+    #[ORM\Column]
+    private ?bool $active = null;
 
     public function getId(): ?int
     {
@@ -48,12 +51,12 @@ class CountryState
 
     public function getCountry(): ?Country
     {
-        return $this->Country;
+        return $this->country;
     }
 
-    public function setCountry(?Country $Country): self
+    public function setCountry(?Country $country): self
     {
-        $this->Country = $Country;
+        $this->country = $country;
 
         return $this;
     }
@@ -90,6 +93,18 @@ class CountryState
     public function setUpdatedDate(\DateTimeInterface $updatedDate): self
     {
         $this->updatedDate = $updatedDate;
+
+        return $this;
+    }
+
+    public function isActive(): ?bool
+    {
+        return $this->active;
+    }
+
+    public function setActive(bool $active): self
+    {
+        $this->active = $active;
 
         return $this;
     }

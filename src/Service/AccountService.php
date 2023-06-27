@@ -3,8 +3,11 @@ namespace App\Service;
 
 use App\Component\Util\EntityUtil;
 use App\Component\Util\FormatUtil;
+use App\Component\Util\GenerateUtil;
 use App\Component\Util\ResponseUtil;
+use App\Entity\Country;
 use App\Entity\User;
+use App\Entity\UserAddress;
 use App\Entity\UserPhone;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -158,6 +161,7 @@ class AccountService
             $phone->setIsPrimary($isPrimary);
             $phone->setActive(true);
             $phone->setUpdatedDate(new \DateTime());
+            $phone->setIdentifier(GenerateUtil::number(10));
 
             // Add Date & Flush Changes
             $this->entityManager->persist($phone);
@@ -180,14 +184,14 @@ class AccountService
      * @param bool jsonResponse
      * @param User user
      * @param string country
-     * @param string oldPhoneNumber
+     * @param string identifier
      * @param string phoneNumber
      */
     public function updatePhone(
         bool $jsonResponse,
         User $user,
         string $country,
-        string $oldPhoneNumber,
+        string $identifier,
         string $phoneNumber
     )
     {
@@ -203,7 +207,7 @@ class AccountService
             $phoneNumber = FormatUtil::phoneNumber($country->getDialCode(), $phoneNumber);
 
             // Find old phone
-            $phone = EntityUtil::findOnePhone($this->lang, $this->entityManager, $user, $oldPhoneNumber);
+            $phone = EntityUtil::findOnePhone($this->lang, $this->entityManager, $user, $identifier);
 
             // Phone not Exist
             if($phone instanceof \Exception) throw new \Exception($phone->getMessage());
@@ -238,18 +242,18 @@ class AccountService
      * 
      * @param bool jsonResponse
      * @param User user
-     * @param string phoneNumber
+     * @param string identifier
      */
     public function updatePrimaryPhone(
         bool $jsonResponse,
         User $user,
-        string $phoneNumber
+        string $identifier
     )
     {
         try {
 
             // Find phone
-            $phone = EntityUtil::findOnePhone($this->lang, $this->entityManager, $user, $phoneNumber);
+            $phone = EntityUtil::findOnePhone($this->lang, $this->entityManager, $user, $identifier);
 
             // Exception
             if($phone instanceof \Exception) throw new \Exception($phone->getMessage());
@@ -292,18 +296,18 @@ class AccountService
      * 
      * @param bool jsonResponse
      * @param User user
-     * @param string phoneNumber
+     * @param string identifier
      */
     public function removePhone(
         bool $jsonResponse,
         User $user,
-        string $phoneNumber
+        string $identifier
     )
     {
         try {
 
             // Find phone
-            $phone = EntityUtil::findOnePhone($this->lang, $this->entityManager, $user, $phoneNumber);
+            $phone = EntityUtil::findOnePhone($this->lang, $this->entityManager, $user, $identifier);
 
             // Exception
             if($phone instanceof \Exception) throw new \Exception($phone->getMessage());
@@ -331,18 +335,18 @@ class AccountService
      * 
      * @param bool jsonResponse
      * @param User user
-     * @param string phoneNumber
+     * @param string identifier
      */
     public function phoneDetails(
         bool $jsonResponse,
         User $user,
-        string $phoneNumber
+        string $identifier
     )
     {
         try {
 
             // Find phone
-            $phone = EntityUtil::findOnePhone($this->lang, $this->entityManager, $user, $phoneNumber);
+            $phone = EntityUtil::findOnePhone($this->lang, $this->entityManager, $user, $identifier);
 
             // Exception
             if($phone instanceof \Exception) throw new \Exception($phone->getMessage());
@@ -365,6 +369,7 @@ class AccountService
     {
         // Details
         $data = [
+            'id' => $phone->getIdentifier(),
             'country' => [
                 'name' => $phone->getCountry()->getName(),
                 'code' =>  $phone->getCountry()->getCode(),
@@ -384,64 +389,344 @@ class AccountService
     /**
      * User Address
      * 
-     * Add Address
+     * Get All Address
      * 
      * @param bool jsonResponse
      * @param User user
+     * @param string search
      * @param string country
-     * @param string phoneNumber
+     * @param string state
+     * @param bool isPrimary
+     * 
      */
-    public function addAddress(
+    public function allAddress(
         bool $jsonResponse,
         User $user,
-        string $country,
-        string $phoneNumber
+        string $search = null,
+        string $country = null,
+        string $state = null,
+        bool $isPrimary = null
     )
     {
         try {
 
-            // Find Country
-            $country = EntityUtil::findOneCountry($this->lang, $this->entityManager, $country);
+            // Find address
+            $addresses = EntityUtil::findAllAddress($this->lang, $this->entityManager, $user, $search, $country, $state, $isPrimary);
 
             // Exception
-            if($country instanceof \Exception) throw new \Exception($country->getMessage());
+            if($addresses instanceof \Exception) throw new \Exception($addresses->getMessage());
 
-            // Format phone number
-            $phoneNumber = FormatUtil::phoneNumber($country->getDialCode(), $phoneNumber);
+            // Hold Data
+            $data = [];
 
-            // Find phone if exist
-            $findPhone = EntityUtil::findOnePhone($this->lang, $this->entityManager, $user, $phoneNumber);
+            // Loop all address
+            foreach ($addresses as $key => $address) {
+                # code...
+                $data[] = self::formatAddressDetails($address);
+            }
 
-            // Phone Exist
-            if(!$findPhone instanceof \Exception) throw new \Exception($this->lang->trans('account.phone.exist'));
-            
-
-            // Find Primary
-            $findPrimary = EntityUtil::findPrimaryPhone($this->lang, $this->entityManager, $user);
-
-            // Is Primary
-            $isPrimary = ($findPrimary instanceof \Exception) ? true : false;
-
-            // Prepaired DB
-            $phone = new UserPhone();
-            $phone->setUser($user);
-            $phone->setDate(new \DateTime());
-            $phone->setCountry($country);
-            $phone->setPhone($phoneNumber);
-            $phone->setIsPrimary($isPrimary);
-            $phone->setActive(true);
-            $phone->setUpdatedDate(new \DateTime());
-
-            // Add Date & Flush Changes
-            $this->entityManager->persist($phone);
-            $this->entityManager->flush();
-            
             // Return Response
-            return ResponseUtil::response($jsonResponse, $phone, 200, self::formatPhoneDetails($phone), $this->lang->trans('account.action.success'));
+            return ResponseUtil::response($jsonResponse, $addresses, 200, $data, $this->lang->trans('account.action.success'));
 
         } catch (\Exception $th) {
             //throw $th;
             return ResponseUtil::response($jsonResponse, $th, 400, [], $th->getMessage());
         }
+    }
+
+    /**
+     * User Address
+     * 
+     * Add Address
+     * 
+     * @param bool jsonResponse
+     * @param User user
+     * @param Country country
+     * @param string state
+     * @param string city
+     * @param string address
+     * @param string addressOptional
+     * @param string postalCode
+     */
+    public function addAddress(
+        bool $jsonResponse,
+        User $user,
+        Country $country,
+        string $state,
+        string $city,
+        string $address1,
+        string $addressOptional = null,
+        string $postalCode
+    )
+    {
+        try {
+
+            // Find Country State
+            $countryState = EntityUtil::findOneCountryState($this->lang, $this->entityManager, $country, $state);
+
+            // Exception
+            if($countryState instanceof \Exception) throw new \Exception($countryState->getMessage());
+
+            // Find Address if exist
+            $addressExist = EntityUtil::findOneAddressByPostalCode($this->lang, $this->entityManager, $user, $postalCode);
+
+            // Exception
+            if(!$addressExist instanceof \Exception) throw new \Exception($this->lang->trans('account.address.exist'));
+
+            // Find Primary
+            $findPrimary = EntityUtil::findPrimaryAddress($this->lang, $this->entityManager, $user);
+
+            // Is Primary
+            $isPrimary = ($findPrimary instanceof \Exception) ? true : false;
+
+            // Prepaired DB
+            $address = new UserAddress();
+            $address->setUser($user);
+            $address->setDate(new \DateTime());
+            $address->setCountry($country);
+            $address->setState($countryState);
+            $address->setCity($city);
+            $address->setAddress($address1);
+            $address->setAddress2($addressOptional);
+            $address->setPostalCode($postalCode);
+            $address->setIsPrimary($isPrimary);
+            $address->setIsVerified(false);
+            $address->setActive(true);
+            $address->setUpdatedDate(new \DateTime());
+            $address->setIdentifier(GenerateUtil::number(10));
+
+            // Add Date & Flush Changes
+            $this->entityManager->persist($address);
+            $this->entityManager->flush();
+            
+            // Return Response
+            return ResponseUtil::response($jsonResponse, $address, 200, self::formatAddressDetails($address), $this->lang->trans('account.action.success'));
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return ResponseUtil::response($jsonResponse, $th, 400, [], $th->getMessage());
+        }
+    }
+
+    /**
+     * User Address
+     * 
+     * Update Address
+     * 
+     * @param bool jsonResponse
+     * @param User user
+     * @param string identifier
+     * @param Country country
+     * @param string state
+     * @param string city
+     * @param string address
+     * @param string addressOptional
+     * @param string postalCode
+     * 
+     */
+    public function updateAddress(
+        bool $jsonResponse,
+        User $user,
+        string $identifier,
+        Country $country,
+        string $state,
+        string $city,
+        string $address1,
+        string $addressOptional = null,
+        string $postalCode
+    )
+    {
+        try {
+
+            // Find address
+            $address = EntityUtil::findOneAddress($this->lang, $this->entityManager, $user, $identifier);
+
+            // Address not Exist
+            if($address instanceof \Exception) throw new \Exception($address->getMessage());
+
+            // Find Address if exist
+            $addressExist = EntityUtil::findOneAddressByPostalCode($this->lang, $this->entityManager, $user, $postalCode);
+
+            // Exception
+            if(!$addressExist instanceof \Exception) throw new \Exception($this->lang->trans('account.address.exist'));
+
+            // Find Country State
+            $countryState = EntityUtil::findOneCountryState($this->lang, $this->entityManager, $country, $state);
+
+            // Exception
+            if($countryState instanceof \Exception) throw new \Exception($countryState->getMessage());
+            
+            // Update address
+            $address->setCountry($country);
+            $address->setState($countryState);
+            $address->setCity($city);
+            $address->setAddress($address1);
+            $address->setAddress2($addressOptional);
+            $address->setPostalCode($postalCode);
+            $address->setUpdatedDate(new \DateTime());
+
+            // Flush Changes
+            $this->entityManager->flush();
+
+            // Return Response
+            return ResponseUtil::response($jsonResponse, $address, 200, self::formatAddressDetails($address), $this->lang->trans('account.action.success'));
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return ResponseUtil::response($jsonResponse, $th, 400, [], $th->getMessage());
+        }
+    }
+
+    /**
+     * User Address
+     * 
+     * Update Primary Address
+     * 
+     * @param bool jsonResponse
+     * @param User user
+     * @param string identifier
+     */
+    public function updatePrimaryAddress(
+        bool $jsonResponse,
+        User $user,
+        string $identifier
+    )
+    {
+        try {
+
+            // Find address
+            $address = EntityUtil::findOneAddress($this->lang, $this->entityManager, $user, $identifier);
+
+            // Exception
+            if($address instanceof \Exception) throw new \Exception($address->getMessage());
+            
+            // Find Primary
+            $findPrimary = EntityUtil::findPrimaryAddress($this->lang, $this->entityManager, $user);
+
+            // Update as off Primary
+            if(!$findPrimary instanceof \Exception) {
+
+                // Turn Off primary
+                $findPrimary->setIsPrimary(false);
+                $address->setUpdatedDate(new \DateTime());
+
+                // Flush Changes
+                $this->entityManager->flush();
+                
+            }
+
+            // Add as Primary
+            $address->setIsPrimary(true);
+            $address->setUpdatedDate(new \DateTime());
+
+            // Flush Changes
+            $this->entityManager->flush();
+
+            // Return Response
+            return ResponseUtil::response($jsonResponse, $address, 200, self::formatAddressDetails($address), $this->lang->trans('account.action.success'));
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return ResponseUtil::response($jsonResponse, $th, 400, [], $th->getMessage());
+        }
+    }
+
+    /**
+     * User Address
+     * 
+     * Remove Address
+     * 
+     * @param bool jsonResponse
+     * @param User user
+     * @param string identifier
+     */
+    public function removeAddress(
+        bool $jsonResponse,
+        User $user,
+        string $identifier
+    )
+    {
+        try {
+
+            // Find address
+            $address = EntityUtil::findOneAddress($this->lang, $this->entityManager, $user, $identifier);
+
+            // Exception
+            if($address instanceof \Exception) throw new \Exception($address->getMessage());
+
+            // Check address if is primary
+            if($address->isPrimary()) throw new \Exception($this->lang->trans('account.address.no_primary.remove'));
+
+            // Remove & Flush Changes
+            $this->entityManager->remove($address);
+            $this->entityManager->flush();
+
+            // Return Response
+            return ResponseUtil::response($jsonResponse, $user, 200, [], $this->lang->trans('account.action.success'));
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return ResponseUtil::response($jsonResponse, $th, 400, [], $th->getMessage());
+        }
+    }
+
+    /**
+     * User Address
+     * 
+     * Address Details
+     * 
+     * @param bool jsonResponse
+     * @param User user
+     * @param string identifier
+     */
+    public function addressDetails(
+        bool $jsonResponse,
+        User $user,
+        string $identifier
+    )
+    {
+        try {
+
+            // Find address
+            $address = EntityUtil::findOneAddress($this->lang, $this->entityManager, $user, $identifier);
+
+            // Exception
+            if($address instanceof \Exception) throw new \Exception($address->getMessage());
+
+            // Return Response
+            return ResponseUtil::response($jsonResponse, $address, 200, self::formatAddressDetails($address), $this->lang->trans('account.action.success'));
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return ResponseUtil::response($jsonResponse, $th, 400, [], $th->getMessage());
+        }
+    }
+
+    /**
+     * Format address details
+     */
+    public static function formatAddressDetails(
+        UserAddress $address
+    )
+    {
+        // Details
+        $data = [
+            'id' => $address->getIdentifier(),
+            'country' => [
+                'name' => $address->getCountry()->getName(),
+                'code' =>  $address->getCountry()->getCode()
+            ],
+            'state' => [
+                'name' => $address->getState()->getName(),
+                'code' =>  $address->getState()->getCode()
+            ],
+            'address' => $address->getAddress(),
+            'address_2' => $address->getAddress2(),
+            'postal_code' => $address->getPostalCode(),
+            'isPrimary' => $address->isPrimary()
+        ];
+
+        // Return Data
+        return $data;
     }
 }

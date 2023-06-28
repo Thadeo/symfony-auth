@@ -29,10 +29,10 @@ class AuthController extends BaseController
     {
         $validate = $request->validate([
             'account_type' => 'required|string',
-            'country_code' => 'required|string',
-            'first_name' => 'required|string',
-            'middle_name' => 'required|string',
-            'last_name' => 'required|string',
+            'country_code' => 'required|string|min:2',
+            'first_name' => 'required|string|min:4',
+            'middle_name' => 'required|string|min:4',
+            'last_name' => 'required|string|min:4',
             'email' => 'required|email',
             'password' => 'required|string'
         ]);

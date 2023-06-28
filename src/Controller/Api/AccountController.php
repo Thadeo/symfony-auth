@@ -11,6 +11,38 @@ use Symfony\Component\Routing\Annotation\Route;
 class AccountController extends BaseController
 {
     /**
+     * Update Profile
+     * 
+     * profile
+     */
+    #[Route('/api/account/update/profile', name: 'api_account_update_profile', methods: ['POST'])]
+    public function updateProfile(
+        AppRequest $request,
+        AccountService $account
+    ): Response
+    {
+        $validate = $request->validate([
+            'first_name' => 'required|string|min:4',
+            'middle_name' => 'string|min:4',
+            'last_name' => 'string|min:4',
+            'email' => 'email'
+        ]);
+
+        // Verify Validation
+        if(!empty($validate['errors'])) return $this->json($validate, 400);
+        
+        // Profile
+        $profile = $account->updateProfile(true, $this->getUser(),
+                        $validate['first_name'],
+                        $validate['middle_name'],
+                        $validate['last_name'],
+                        $validate['email']);
+
+        // Return Response
+        return $this->appJson($profile);
+    }
+
+    /**
      * All Phone
      * 
      * Get all Phone

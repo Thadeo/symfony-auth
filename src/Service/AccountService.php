@@ -66,6 +66,85 @@ class AccountService
     }
 
     /**
+     * User Profile
+     * 
+     * Update Profile
+     * 
+     * @param bool jsonResponse
+     * @param User user
+     * @param string firstname
+     * @param string middlename
+     * @param string lastname
+     * @param string email
+     * 
+     */
+    public function updateProfile(
+        bool $jsonResponse,
+        User $user,
+        string $firtName = null,
+        string $middleName = null,
+        string $lastName = null,
+        string $email = null
+    )
+    {
+        try {
+
+            // Nothing to change
+            if(empty($firtName) && empty($lastName) && empty($middleName) && empty($email)) throw new \Exception($this->lang->trans('account.no_action.update'));
+            
+            // Check email if exist
+            if($email) {
+                // Find email
+                $findEmail = EntityUtil::findOneUser($this->lang, $this->entityManager, $email);
+
+                // Exist email
+                if(!$findEmail instanceof \Exception) {
+                    // Verify if user are not the same
+                    if($user !== $findEmail) throw new \Exception($this->lang->trans('account.email.exist'));
+                    
+                }
+            }
+            
+            // Update new details
+            if($firtName) $user->setFirstName($firtName);
+            if($middleName) $user->setMiddleName($middleName);
+            if($lastName) $user->setLastName($lastName);
+            if($email) $user->setEmail($email);
+
+            // Flush Changes
+            $this->entityManager->flush();
+
+            // Return Response
+            return ResponseUtil::response($jsonResponse, $user, 200, self::formatProfileDetails($user), $this->lang->trans('account.action.success'));
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return ResponseUtil::response($jsonResponse, $th, 400, [], $th->getMessage());
+        }
+    }
+
+    /**
+     * Format profile details
+     */
+    public static function formatProfileDetails(
+        User $user
+    )
+    {
+        // Details
+        $data = [
+            'first_name' => $user->getFirstName(),
+            'last_name' => $user->getLastName(),
+            'middle_name' => $user->getMiddleName()
+        ];
+
+        // Return Data
+        return $data;
+    }
+
+    ####################################### PHONE ######################################
+    ######################################################################################
+
+    /**
      * User Phone
      * 
      * Get All Phone
@@ -166,6 +245,15 @@ class AccountService
             // Add Date & Flush Changes
             $this->entityManager->persist($phone);
             $this->entityManager->flush();
+
+            // Set User Primary Phone
+            if($isPrimary) {
+                // Update User
+                $user->setPhone($phone);
+
+                // Flush Changes
+                $this->entityManager->flush();
+            }
             
             // Return Response
             return ResponseUtil::response($jsonResponse, $phone, 200, self::formatPhoneDetails($phone), $this->lang->trans('account.action.success'));
@@ -266,7 +354,7 @@ class AccountService
 
                 // Turn Off primary
                 $findPrimary->setIsPrimary(false);
-                $phone->setUpdatedDate(new \DateTime());
+                $findPrimary->setUpdatedDate(new \DateTime());
 
                 // Flush Changes
                 $this->entityManager->flush();
@@ -276,6 +364,12 @@ class AccountService
             // Add as Primary
             $phone->setIsPrimary(true);
             $phone->setUpdatedDate(new \DateTime());
+
+            // Flush Changes
+            $this->entityManager->flush();
+
+            // Set User Primary Phone
+            $user->setPhone($phone);
 
             // Flush Changes
             $this->entityManager->flush();
@@ -498,6 +592,15 @@ class AccountService
             // Add Date & Flush Changes
             $this->entityManager->persist($address);
             $this->entityManager->flush();
+
+            // Set User Primary Address
+            if($isPrimary) {
+                // Update User
+                $user->setAddress($address);
+
+                // Flush Changes
+                $this->entityManager->flush();
+            }
             
             // Return Response
             return ResponseUtil::response($jsonResponse, $address, 200, self::formatAddressDetails($address), $this->lang->trans('account.action.success'));
@@ -608,7 +711,7 @@ class AccountService
 
                 // Turn Off primary
                 $findPrimary->setIsPrimary(false);
-                $address->setUpdatedDate(new \DateTime());
+                $findPrimary->setUpdatedDate(new \DateTime());
 
                 // Flush Changes
                 $this->entityManager->flush();
@@ -618,6 +721,12 @@ class AccountService
             // Add as Primary
             $address->setIsPrimary(true);
             $address->setUpdatedDate(new \DateTime());
+
+            // Flush Changes
+            $this->entityManager->flush();
+
+            // Set User Primary Address
+            $user->setAddress($address);
 
             // Flush Changes
             $this->entityManager->flush();

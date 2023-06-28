@@ -134,7 +134,7 @@ class AppValidation
                         $colData = VariableValidation::convertStringToArray(':', $ruleKey);
 
                         // Continue to verify
-                        $validateRules = $this->validateRules($requestKey, $requestValue, $colData[0], $colData[1]);
+                        $validateRules = $this->validateRules($requestValue, $colData[0], $colData[1]);
 
                         // Exception
                         if($validateRules instanceof ValidationException) $errors[] = $validateRules->getData()['errors'];
@@ -229,9 +229,7 @@ class AppValidation
             if(in_array($ruleKey, ['min', 'max'])) {
 
                 // Verify value if has value
-                if(empty($ruleValue) || empty($requestValue)) {
-                    $errors = "$ruleKey ".$this->lang->trans('validation.rule.value.required');
-                }else{
+                if(!empty($ruleValue) || !empty($requestValue)) {
                     // Verify min value
                     if(!VariableValidation::isMin($requestValue, $ruleValue) && $ruleKey == 'min') {
                         $errors = $this->lang->trans('validation.rule.value.min', ['%value%' => $ruleValue]);

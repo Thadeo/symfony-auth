@@ -55,23 +55,6 @@ class AuthController extends BaseController
     }
 
     /**
-     * Account Type
-     * 
-     * Fetch Account Type
-     */
-    #[Route('/api/auth/fetch/account-type', name: 'api_auth_fetch_account_type', methods: ['GET'])]
-    public function fetchAccountType(
-        AccountService $account
-    ): Response
-    {
-        // Fetch Account
-        $data = $account->allAccountType(true);
-
-        // Return Response
-        return $this->appJson($data);
-    }
-
-    /**
      * Token 2-Factor Submit
      * 
      * Submit data for authenticate 

@@ -400,6 +400,41 @@ class EntityUtil
         }
     }
 
+     /**
+     * Find All Country
+     * 
+     * @param TranslatorInterface lang
+     * @param EntityManagerInterface entitymanager
+     * @param string code
+     * 
+     * @return Country
+     */
+    public static function findAllCountry(
+        TranslatorInterface $lang,
+        EntityManagerInterface $entityManager,
+        string $country = null,
+        int $page = 1,
+        int $perPage = 10,
+        string $orderBy = 'desc'
+    )
+    {
+         try {
+
+            // Find Country
+            $country = $entityManager->getRepository(Country::class)->findAllCountry($country, $page, $perPage, $orderBy);
+
+            // Country not exist
+            if(empty($country['data'])) throw new \Exception("Country not found");
+
+            // Return Country
+            return $country;
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return $th;
+        }
+    }
+
     /**
      * Find One Country State
      * 

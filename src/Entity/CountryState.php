@@ -20,11 +20,26 @@ class CountryState
     #[ORM\ManyToOne(inversedBy: 'countryStates')]
     private ?Country $country = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $countryCode = null;
+
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $code = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $fipsCode = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $type = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 20, scale: 8, nullable: true)]
+    private ?string $latitude = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 20, scale: 8, nullable: true)]
+    private ?string $longitude = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $updatedDate = null;
@@ -61,6 +76,18 @@ class CountryState
         return $this;
     }
 
+    public function getCountryCode(): ?string
+    {
+        return $this->countryCode;
+    }
+
+    public function setCountryCode(?string $countryCode): static
+    {
+        $this->countryCode = $countryCode;
+
+        return $this;
+    }
+
     public function getName(): ?string
     {
         return $this->name;
@@ -81,6 +108,54 @@ class CountryState
     public function setCode(?string $code): self
     {
         $this->code = $code;
+
+        return $this;
+    }
+
+    public function getFipsCode(): ?string
+    {
+        return $this->fipsCode;
+    }
+
+    public function setFipsCode(?string $fipsCode): static
+    {
+        $this->fipsCode = $fipsCode;
+
+        return $this;
+    }
+
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function setType(?string $type): static
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    public function getLatitude(): ?string
+    {
+        return $this->latitude;
+    }
+
+    public function setLatitude(?string $latitude): static
+    {
+        $this->latitude = $latitude;
+
+        return $this;
+    }
+
+    public function getLongitude(): ?string
+    {
+        return $this->longitude;
+    }
+
+    public function setLongitude(?string $longitude): static
+    {
+        $this->longitude = $longitude;
 
         return $this;
     }

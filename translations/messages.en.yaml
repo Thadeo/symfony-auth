@@ -41,3 +41,6 @@ account.phone.no_primary.remove: You can't remove primary phone, set other phone
 account.address.exist: Your address is already exist
 account.address.no_primary.remove: You can't remove primary address, set other address as primary then try to remove again
 account.email.exist: Your email is already exist
+
+# MISC
+misc.action.success: Successful

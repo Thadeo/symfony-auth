@@ -41,7 +41,7 @@ class AppValidation
 
             // Verify rules key first if available in request Body
             foreach ($ruleData as $rulekey => $rulevalue) {
-                # Key not exist set as optional
+                # Key not exist set as null value optional
                 if(!array_key_exists($rulekey, $requestData)) $requestData[$rulekey] = null;
                 //if(!array_key_exists($rulekey, $requestData)) $errors[$rulekey][] = $this->lang->trans('validation.data.key_not_exist', ['%key%' => $rulekey]);
             }//
@@ -228,8 +228,8 @@ class AppValidation
             # Check min, max
             if(in_array($ruleKey, ['min', 'max'])) {
 
-                // Verify value if has value
-                if(!empty($ruleValue) || !empty($requestValue)) {
+                // Verify if has value
+                if(!empty($ruleValue) && !empty($requestValue)) {
                     // Verify min value
                     if(!VariableValidation::isMin($requestValue, $ruleValue) && $ruleKey == 'min') {
                         $errors = $this->lang->trans('validation.rule.value.min', ['%value%' => $ruleValue]);

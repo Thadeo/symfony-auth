@@ -43,6 +43,23 @@ class AccountController extends BaseController
     }
 
     /**
+     * Profile Details
+     * 
+     * profile
+     */
+    #[Route('/api/account/find/profile', name: 'api_account_find_profile', methods: ['GET'])]
+    public function profileDetails(
+        AccountService $account
+    ): Response
+    {
+        // Profile
+        $profile = $account->profileDetails(true, $this->getUser());
+
+        // Return Response
+        return $this->appJson($profile);
+    }
+
+    /**
      * All Phone
      * 
      * Get all Phone

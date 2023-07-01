@@ -52,7 +52,7 @@ security:
             - { path: ^/api/auth/token, roles: PUBLIC_ACCESS }
             - { path: ^/api/auth/register, roles: PUBLIC_ACCESS }
             - { path: ^/api/auth/forget, roles: PUBLIC_ACCESS }
-            - { path: ^/api/auth/fetch/account-type, roles: PUBLIC_ACCESS }
+            - { path: ^/api/data, roles: PUBLIC_ACCESS }
             - { path: ^/api,       roles: IS_AUTHENTICATED_FULLY }
 
 when@test:

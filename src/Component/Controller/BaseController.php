@@ -47,10 +47,11 @@ class BaseController extends AbstractController
     /**
      * Returns a JsonResponse that uses the serializer component if enabled, or json_encode.
      *
-     * @param int $status The HTTP status code (200 "OK" by default)
+     * @param array data
+     * @param int status
      */
-    protected function appJson(array $data)
+    protected function appJson(array $data, int $status = null)
     {
-        return $this->json($data, $data['status']);
+        return $this->json($data, ($status) ? $status : $data['status']);
     }
 }

@@ -19,7 +19,14 @@ class VariableValidation
         if(self::isString($data)) $cleanValue = htmlspecialchars($data);
 
         // Verify is numeric, amount & phone
-        if(self::isNumeric($data) || self::isAmount($data)) $cleanValue = filter_var($data, FILTER_SANITIZE_NUMBER_INT);
+        if(self::isNumeric($data) || self::isAmount($data)) {
+
+            // Clean
+            $cleanValue = filter_var($data, FILTER_SANITIZE_NUMBER_INT);
+
+            // Change to int
+            $cleanValue = (int) $cleanValue;
+        }
 
         // Verify is phone
         if(self::isPhone($data)) $cleanValue = filter_var($data, FILTER_SANITIZE_NUMBER_INT);

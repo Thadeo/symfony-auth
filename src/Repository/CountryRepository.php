@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Country;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -39,28 +40,54 @@ class CountryRepository extends ServiceEntityRepository
         }
     }
 
-//    /**
-//     * @return Country[] Returns an array of Country objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('c')
-//            ->andWhere('c.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('c.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    /**
+     * Find All Country
+     * 
+     * @param string country
+     * @param int page
+     * @param int perPage
+     * @param string orderBy
+     */
+    public function findAllCountry(
+        string $country = null,
+        int $page = 1,
+        int $perPage = 10,
+        string $orderBy = 'desc'
+    )
+    {
+        $query = $this->createQueryBuilder('a');
 
-//    public function findOneBySomeField($value): ?Country
-//    {
-//        return $this->createQueryBuilder('c')
-//            ->andWhere('c.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+        // Find country
+        if($country) {
+            $query->andWhere('a.name = :country')
+                  ->orWhere('a.code = :country')
+                  ->orWhere('a.iso = :country')
+                  ->orWhere('a.dialCode = :country')
+                  ->orWhere('a.capital = :country')
+                  ->setParameter('country', $country);
+        }
+
+        // Get currenct page
+        --$page;
+
+        // Set Page
+        $query->setFirstResult($perPage * $page);
+
+        // set Maximum Result
+        $query->setMaxResults($perPage);
+
+        // Order By
+        $query->orderBy('a.id', $orderBy);
+
+        $paginator = new Paginator($query, false);
+
+        // Result
+        $buldResult = [
+            'data' => $paginator,
+            'count' => count($paginator)
+        ];
+
+        // Return Result
+        return $buldResult;
+    }
 }

@@ -124,6 +124,31 @@ class AccountService
     }
 
     /**
+     * User Profile
+     * 
+     * Profile Details
+     * 
+     * @param bool jsonResponse
+     * @param User user
+     * 
+     */
+    public function profileDetails(
+        bool $jsonResponse,
+        User $user
+    )
+    {
+        try {
+
+            // Return Response
+            return ResponseUtil::response($jsonResponse, $user, 200, self::formatProfileDetails($user), $this->lang->trans('account.action.success'));
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return ResponseUtil::response($jsonResponse, $th, 400, [], $th->getMessage());
+        }
+    }
+
+    /**
      * Format profile details
      */
     public static function formatProfileDetails(

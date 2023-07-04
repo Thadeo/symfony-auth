@@ -47,24 +47,27 @@ class CountryRepository extends ServiceEntityRepository
      * @param int page
      * @param int perPage
      * @param string orderBy
+     * @param string orderColumn
      */
     public function findAllCountry(
         string $country = null,
         int $page = 1,
         int $perPage = 10,
-        string $orderBy = 'desc'
+        string $orderBy = null,
+        string $orderColumn = null
     )
     {
         $query = $this->createQueryBuilder('a');
 
         // Find country
         if($country) {
-            $query->andWhere('a.name = :country')
-                  ->orWhere('a.code = :country')
+            $query->andWhere('a.code = :country')
+                  ->orWhere('a.name LIKE :countryLike')
                   ->orWhere('a.iso = :country')
                   ->orWhere('a.dialCode = :country')
-                  ->orWhere('a.capital = :country')
-                  ->setParameter('country', $country);
+                  ->orWhere('a.capital LIKE :countryLike')
+                  ->setParameter('country', $country)
+                  ->setParameter('countryLike', '%'.$country.'%');
         }
 
         // Get currenct page
@@ -76,8 +79,13 @@ class CountryRepository extends ServiceEntityRepository
         // set Maximum Result
         $query->setMaxResults($perPage);
 
+        // Set Order Column
+        $orderColumn = ($orderColumn) ? $orderColumn : 'id';
+
         // Order By
-        $query->orderBy('a.id', $orderBy);
+        if($orderBy && $orderColumn) {
+            $query->orderBy('a.'.$orderColumn, $orderBy);
+        }
 
         $paginator = new Paginator($query, false);
 

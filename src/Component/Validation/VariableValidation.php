@@ -15,9 +15,6 @@ class VariableValidation
         // Hold clean
         $cleanValue = $data;
 
-        // Verify is string
-        if(self::isString($data)) $cleanValue = htmlspecialchars($data);
-
         // Verify is numeric, amount & phone
         if(self::isNumeric($data) || self::isAmount($data)) {
 
@@ -27,6 +24,9 @@ class VariableValidation
             // Change to int
             $cleanValue = (int) $cleanValue;
         }
+
+        // Verify is string
+        if(self::isString($data)) $cleanValue = htmlspecialchars($data);
 
         // Verify is phone
         if(self::isPhone($data)) $cleanValue = filter_var($data, FILTER_SANITIZE_NUMBER_INT);
@@ -218,6 +218,90 @@ class VariableValidation
     {
         // Verify if is url
         if(!filter_var($url, FILTER_VALIDATE_URL)) return false;
+
+        // Return Response
+        return true;
+    }
+
+    /**
+     * Match
+     * 
+     * @param string match
+     */
+    /*public static function isMatch($match): bool
+    {
+        // Verify if string or array
+        $verifyType = self::isArrayOrString($match);
+
+        // Verify type is null
+        if($verifyType == null) return false;
+
+        // Check if is array
+        if($verifyType == "array") {
+            // Verify if not empty
+            if(empty($match)) return false;
+        }
+
+        // Check if is string
+        if($verifyType == "string") {
+            // Verify if not empty
+            if(empty($match)) return false;
+
+            // Replace
+            $replace = str_replace(['[', ']'], '', $match);
+
+            // Change to array
+            $array = explode(',', $replace);
+
+            // Verify if is array
+            if(!is_array($array)) return false;
+        }
+
+        // Return Response
+        return true;
+    }*/
+
+    /**
+     * Match
+     * 
+     * @param string value
+     * @param string match
+     */
+    public static function isMatch($value, $match): bool
+    {
+        // Verify if string or array
+        $verifyType = self::isArrayOrString($match);
+
+        // Verify type is null
+        if($verifyType == null) return false;
+
+        // Check if is array
+        if($verifyType == "array") {
+            // Verify if not empty
+            if(empty($match)) return false;
+
+            // Match
+            if(!in_array($value, $match)) return false;
+        }
+
+        // Check if is string
+        if($verifyType == "string") {
+            
+            // Verify if not empty
+            if(empty($match)) return false;
+
+            // Replace
+            $replace = str_replace(['[', ']'], '', $match);
+
+            // Change to array
+            $array = explode(',', $replace);
+
+            // Verify if is array
+            if(!is_array($array)) return false;
+
+            // Match
+            if(!in_array($value, $array)) return false;
+        }
 
         // Return Response
         return true;

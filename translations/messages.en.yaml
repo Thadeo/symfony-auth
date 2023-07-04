@@ -15,6 +15,7 @@ validation.rule.value.email: invalid email address
 validation.rule.value.url: value must be a valid url
 validation.rule.value.min: min value is %value%
 validation.rule.value.max: max value is %value%
+validation.rule.value.match: value %value% not valid
 
 # AUTHENTICATION
 auth.signup.success: Registration Successful
@@ -42,5 +43,5 @@ account.address.exist: Your address is already exist
 account.address.no_primary.remove: You can't remove primary address, set other address as primary then try to remove again
 account.email.exist: Your email is already exist
 
-# MISC
-misc.action.success: Successful
+# COUNTRY
+country.action.success: Successful

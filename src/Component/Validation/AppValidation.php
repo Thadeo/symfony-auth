@@ -9,7 +9,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  */
 class AppValidation
 {
-    private $ruleKeys = ['required', 'numeric', 'string', 'amount', 'bool', 'min', 'max', 'phone', 'email', 'url'];
+    private $ruleKeys = ['required', 'numeric', 'string', 'amount', 'bool', 'min', 'max', 'match', 'phone', 'email', 'url'];
 
     public function __construct(
         private TranslatorInterface $lang
@@ -240,6 +240,20 @@ class AppValidation
                         $errors = $this->lang->trans('validation.rule.value.max', ['%value%' => $ruleValue]);
                     }
                 }
+            } ##
+
+            # Check match
+            if(in_array($ruleKey, ['match'])) {
+
+               // Verify if has value
+               if(!empty($ruleValue) && !empty($requestValue)) {
+                
+                    // Verify match
+                    if(!VariableValidation::isMatch($requestValue, $ruleValue)) {
+                        $errors = $this->lang->trans('validation.rule.value.match', ['%value%' => $requestValue]);
+                    }
+                }
+                
             } ##
             
 

@@ -405,9 +405,13 @@ class EntityUtil
      * 
      * @param TranslatorInterface lang
      * @param EntityManagerInterface entitymanager
-     * @param string code
+     * @param string country
+     * @param int page
+     * @param int perPage
+     * @param string orderBy
+     * @param string orderColumn
      * 
-     * @return Country
+     * @return array
      */
     public static function findAllCountry(
         TranslatorInterface $lang,
@@ -415,13 +419,14 @@ class EntityUtil
         string $country = null,
         int $page = 1,
         int $perPage = 10,
-        string $orderBy = 'desc'
+        string $orderBy = null,
+        string $orderColumn = null
     )
     {
          try {
 
             // Find Country
-            $country = $entityManager->getRepository(Country::class)->findAllCountry($country, $page, $perPage, $orderBy);
+            $country = $entityManager->getRepository(Country::class)->findAllCountry($country, $page, $perPage, $orderBy, $orderColumn);
 
             // Country not exist
             if(empty($country['data'])) throw new \Exception("Country not found");
@@ -441,27 +446,69 @@ class EntityUtil
      * @param TranslatorInterface lang
      * @param EntityManagerInterface entitymanager
      * @param Country country
-     * @param string code
+     * @param string state
      * 
      * @return CountryState
      */
     public static function findOneCountryState(
         TranslatorInterface $lang,
         EntityManagerInterface $entityManager,
-        Country $country,
-        string $code
+        string $country,
+        string $state
     )
     {
          try {
 
             // Find Country State
-            $countryState = $entityManager->getRepository(CountryState::class)->findOneBy(['country' => $country, 'code' => $code, 'active' => true]);
+            $countryState = $entityManager->getRepository(CountryState::class)->findOneState($country, $state);
 
             // Country State not exist
-            if(!$countryState) throw new \Exception("Country state $code not exist");
+            if(!$countryState) throw new \Exception("State $state not found");
 
             // Return Country State
             return $countryState;
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return $th;
+        }
+    }
+
+    /**
+     * Find All Country State
+     * 
+     * @param TranslatorInterface lang
+     * @param EntityManagerInterface entitymanager
+     * @param string country
+     * @param string state
+     * @param int page
+     * @param int perPage
+     * @param string orderBy
+     * @param string orderColumn
+     * 
+     * @return array
+     */
+    public static function findAllCountryState(
+        TranslatorInterface $lang,
+        EntityManagerInterface $entityManager,
+        string $country,
+        string $state = null,
+        int $page = 1,
+        int $perPage = 10,
+        string $orderBy = null,
+        string $orderColumn = null
+    )
+    {
+         try {
+
+            // Find State
+            $states = $entityManager->getRepository(CountryState::class)->findAllState($country, $state, $page, $perPage, $orderBy, $orderColumn);
+
+            // Country not exist
+            if(empty($states['data'])) throw new \Exception("States not found");
+
+            // Return State
+            return $states;
 
         } catch (\Exception $th) {
             //throw $th;

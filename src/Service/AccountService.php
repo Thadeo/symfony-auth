@@ -581,7 +581,7 @@ class AccountService
         try {
 
             // Find Country State
-            $countryState = EntityUtil::findOneCountryState($this->lang, $this->entityManager, $country, $state);
+            $countryState = EntityUtil::findOneCountryState($this->lang, $this->entityManager, $country->getCode(), $state);
 
             // Exception
             if($countryState instanceof \Exception) throw new \Exception($countryState->getMessage());
@@ -679,7 +679,7 @@ class AccountService
             if(!$addressExist instanceof \Exception) throw new \Exception($this->lang->trans('account.address.exist'));
 
             // Find Country State
-            $countryState = EntityUtil::findOneCountryState($this->lang, $this->entityManager, $country, $state);
+            $countryState = EntityUtil::findOneCountryState($this->lang, $this->entityManager, $country->getCode(), $state);
 
             // Exception
             if($countryState instanceof \Exception) throw new \Exception($countryState->getMessage());

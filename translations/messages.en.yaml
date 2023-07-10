@@ -19,7 +19,6 @@ validation.rule.value.match: value %value% not valid
 
 # AUTHENTICATION
 auth.signup.success: Registration Successful
-auth.password_verify: Password must have atlist one lowercase, one uppercase, number and characters must be more than 8 in long
 auth.password_reset.success: Password reset successful, you can try to login
 auth.required: 2-factor authenticate required
 auth.not_active: Authentication not active
@@ -42,6 +41,12 @@ account.phone.no_primary.remove: You can't remove primary phone, set other phone
 account.address.exist: Your address is already exist
 account.address.no_primary.remove: You can't remove primary address, set other address as primary then try to remove again
 account.email.exist: Your email is already exist
+
+# SECURITY
+security.auth.required: Authentication required
+security.password_validate.invalid: Password must have atlist one lowercase, one uppercase, number and characters must be more than 8 in long
+security.password_verify.invalid: Current Password not valid
+security.password_match.invalid: New password can't be the same current password, enter new password again
 
 # COUNTRY
 country.action.success: Successful

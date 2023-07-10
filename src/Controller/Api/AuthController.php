@@ -7,10 +7,8 @@ use App\Component\Request\AppRequest;
 use App\Component\Util\EntityUtil;
 use App\Component\Util\ResponseUtil;
 use App\Entity\User;
-use App\Service\AccountService;
 use App\Service\AuthService;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -25,7 +23,7 @@ class AuthController extends BaseController
     public function register(
         AppRequest $request,
         AuthService $auth
-    ): Response
+    )
     {
         $validate = $request->validate([
             'account_type' => 'required|string',
@@ -65,7 +63,7 @@ class AuthController extends BaseController
         AuthService $auth,
         TranslatorInterface $lang,
         EntityManagerInterface $entityManager
-    ): Response
+    )
     {
         // Check if user available in session
         if($request->getSession()->get('apiUser') == null) return $this->json(ResponseUtil::jsonResponse(401, null, $lang->trans('auth.api.unauthorized')), 401);
@@ -99,7 +97,7 @@ class AuthController extends BaseController
         AuthService $auth,
         TranslatorInterface $lang,
         EntityManagerInterface $entityManager
-    ): Response
+    )
     {
         // Check if user available in session
         if($request->getSession()->get('apiUser') == null) return $this->json(ResponseUtil::jsonResponse(401, null, $lang->trans('auth.api.unauthorized')), 401);
@@ -138,7 +136,7 @@ class AuthController extends BaseController
         AuthService $auth,
         TranslatorInterface $lang,
         EntityManagerInterface $entityManager
-    ): Response
+    )
     {
 
         // Check if user available in session
@@ -176,7 +174,7 @@ class AuthController extends BaseController
         AuthService $auth,
         EntityManagerInterface $entityManager,
         TranslatorInterface $lang
-    ): Response
+    )
     {
 
         // Validate Rules
@@ -214,7 +212,7 @@ class AuthController extends BaseController
         AuthService $auth,
         TranslatorInterface $lang,
         EntityManagerInterface $entityManager
-    ): Response
+    )
     {
 
         // Check if user available in session

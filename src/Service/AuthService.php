@@ -11,7 +11,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -24,7 +23,6 @@ class AuthService
 
     public function __construct(
         EntityManagerInterface $entityManager,
-        private UserPasswordHasherInterface $userPasswordHash,
         private TokenStorageInterface $tokenStorage,
         private RequestStack $requestStack,
         private TranslatorInterface $lang,
@@ -35,7 +33,6 @@ class AuthService
     )
     {
         $this->entityManager = $entityManager;
-        $this->userPasswordHash = $userPasswordHash;
         $this->tokenStorage = $tokenStorage;
         $this->lang = $lang;
         $this->setting = $setting;
@@ -94,14 +91,17 @@ class AuthService
             if($verifyEmail instanceof \Exception) throw new \Exception($verifyEmail->getMessage());
             
             // Verify password
-            if($this->userPasswordVerify($password) instanceof \Exception) throw new \Exception($this->userPasswordVerify($password)->getMessage());
+            if($this->security->validateUserPassword($password) instanceof \Exception) throw new \Exception($this->security->validateUserPassword($password)->getMessage());
             
             
             // Prepaire User
             $user = new User();
 
             // Hash Password
-            $passwordHash = $this->userPasswordHash->hashPassword($user, $password);
+            $passwordHash = $this->security->userPasswordHash($user, $password);
+
+            // Exception
+            if($passwordHash instanceof \Exception) throw new \Exception($passwordHash->getMessage());
 
             // Prepaire Data
             $user->setDate(new \DateTime());
@@ -178,7 +178,11 @@ class AuthService
             if(!in_array($authentication->getAuthType()->getAuth()->getCode(), ['auth_reset_password'])) throw new \Exception($this->lang->trans('auth.not_valid'));
             
             // Hash Password
-            $passwordHash = $this->userPasswordHash->hashPassword($user, $newPassword);
+            $passwordHash = $this->security->userPasswordHash($user, $newPassword);
+
+            // Exception
+            if($passwordHash instanceof \Exception) throw new \Exception($passwordHash->getMessage());
+            
 
             // Update Data
             $user->setPassword($passwordHash);
@@ -202,35 +206,6 @@ class AuthService
         } catch (\Exception $th) {
             //throw $th;
             return ResponseUtil::response($jsonResponse, $th, 400, null, $th->getMessage());
-        }
-    }
-
-    /**
-     * Password Verify
-     * 
-     * Verify Password
-     * 
-     * @param string password
-     */
-    public function userPasswordVerify(
-        string $password,
-        int $length = 8
-    )
-    {
-        try {
-            
-            // Hold Verify
-            $verifyPassword = preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{'.$length.',}$/', $password);
-
-            // Verify Password
-            if(!$verifyPassword) throw new \Exception($this->lang->trans('auth.password_verify'));
-            
-            // Return Password
-            return $password;
-
-        } catch (\Exception $th) {
-            //throw $th;
-            return $th;
         }
     }
 

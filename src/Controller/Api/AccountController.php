@@ -5,7 +5,6 @@ namespace App\Controller\Api;
 use App\Component\Controller\BaseController;
 use App\Component\Request\AppRequest;
 use App\Service\AccountService;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 class AccountController extends BaseController
@@ -19,7 +18,7 @@ class AccountController extends BaseController
     public function updateProfile(
         AppRequest $request,
         AccountService $account
-    ): Response
+    )
     {
         $validate = $request->validate([
             'first_name' => 'required|string|min:4',
@@ -50,7 +49,7 @@ class AccountController extends BaseController
     #[Route('/api/account/find/profile', name: 'api_account_find_profile', methods: ['GET'])]
     public function profileDetails(
         AccountService $account
-    ): Response
+    )
     {
         // Profile
         $profile = $account->profileDetails(true, $this->getUser());
@@ -68,7 +67,7 @@ class AccountController extends BaseController
     public function allPhone(
         AppRequest $request,
         AccountService $account
-    ): Response
+    )
     {
         $validate = $request->validate([
             'search' => 'string',
@@ -95,7 +94,7 @@ class AccountController extends BaseController
     public function addPhone(
         AppRequest $request,
         AccountService $account
-    ): Response
+    )
     {
         $validate = $request->validate([
             'country_code' => 'required|string',
@@ -124,7 +123,7 @@ class AccountController extends BaseController
         AppRequest $request,
         AccountService $account,
         string $identifier
-    ): Response
+    )
     {
         $validate = $request->validate([
             'country_code' => 'required|string',
@@ -153,7 +152,7 @@ class AccountController extends BaseController
     public function setPrimaryPhone(
         AccountService $account,
         string $identifier
-    ): Response
+    )
     {
         // Phone
         $phone = $account->updatePrimaryPhone(true, $this->getUser(), $identifier);
@@ -171,7 +170,7 @@ class AccountController extends BaseController
     public function removePhone(
         AccountService $account,
         string $identifier
-    ): Response
+    )
     {
         // Phone
         $phone = $account->removePhone(true, $this->getUser(), $identifier);
@@ -189,7 +188,7 @@ class AccountController extends BaseController
     public function phoneDetails(
         AccountService $account,
         string $identifier
-    ): Response
+    )
     {
         // Phone
         $phone = $account->phoneDetails(true, $this->getUser(), $identifier);
@@ -207,7 +206,7 @@ class AccountController extends BaseController
     public function allAddress(
         AppRequest $request,
         AccountService $account
-    ): Response
+    )
     {
         $validate = $request->validate([
             'search' => 'string',
@@ -235,7 +234,7 @@ class AccountController extends BaseController
     public function addAddress(
         AppRequest $request,
         AccountService $account
-    ): Response
+    )
     {
         $validate = $request->validate([
             'state' => 'required|string',
@@ -271,7 +270,7 @@ class AccountController extends BaseController
         AppRequest $request,
         AccountService $account,
         string $identifier
-    ): Response
+    )
     {
         $validate = $request->validate([
             'state' => 'required|string',
@@ -307,7 +306,7 @@ class AccountController extends BaseController
     public function setPrimaryAddress(
         AccountService $account,
         string $identifier
-    ): Response
+    )
     {
         // Address
         $address = $account->updatePrimaryAddress(true, $this->getUser(), $identifier);
@@ -325,7 +324,7 @@ class AccountController extends BaseController
     public function removeAddress(
         AccountService $account,
         string $identifier
-    ): Response
+    )
     {
         // Address
         $address = $account->removeAddress(true, $this->getUser(), $identifier);
@@ -343,12 +342,40 @@ class AccountController extends BaseController
     public function addressDetails(
         AccountService $account,
         string $identifier
-    ): Response
+    )
     {
         // Address
         $address = $account->addressDetails(true, $this->getUser(), $identifier);
 
         // Return Response
         return $this->appJson($address);
+    }
+
+    /**
+     * Update Password
+     * 
+     * password
+     */
+    #[Route('/api/account/update/password', name: 'api_account_update_password', methods: ['POST'])]
+    public function updatePassword(
+        AppRequest $request,
+        AccountService $account
+    )
+    {
+        $validate = $request->validate([
+            'password' => 'required|string',
+            'new_password' => 'required|string'
+        ]);
+
+        // Verify Validation
+        if(!empty($validate['errors'])) return $this->json($validate, 400);
+        
+        // Password
+        $password = $account->updatePassword(true, $this->getUser(),
+                        $validate['password'],
+                        $validate['new_password']);
+
+        // Return Response
+        return $this->appJson($password);
     }
 }

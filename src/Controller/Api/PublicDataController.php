@@ -6,7 +6,6 @@ use App\Component\Controller\BaseController;
 use App\Component\Request\AppRequest;
 use App\Service\AccountService;
 use App\Service\CountryService;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 
@@ -20,7 +19,7 @@ class PublicDataController extends BaseController
     #[Route('/api/data/account-type', name: 'api_data_account_type', methods: ['GET'])]
     public function fetchAccountType(
         AccountService $account
-    ): Response
+    )
     {
         // Fetch Account
         $data = $account->allAccountType(true);
@@ -38,7 +37,7 @@ class PublicDataController extends BaseController
     public function allCountry(
         AppRequest $request,
         CountryService $country
-    ): Response
+    )
     {
         $validate = $request->validate([
             'country' => 'string',
@@ -73,7 +72,7 @@ class PublicDataController extends BaseController
         AppRequest $request,
         CountryService $country,
         string $getCountry
-    ): Response
+    )
     {
         // Country
         $country = $country->country(true, $getCountry);
@@ -92,7 +91,7 @@ class PublicDataController extends BaseController
         AppRequest $request,
         CountryService $country,
         string $getCountry
-    ): Response
+    )
     {
         $validate = $request->validate([
             'state' => 'string',
@@ -125,11 +124,10 @@ class PublicDataController extends BaseController
      */
     #[Route('/api/data/country/{getCountry}/state/{getState}', name: 'api_data_country_state_details', methods: ['GET'])]
     public function countryState(
-        AppRequest $request,
         CountryService $country,
         string $getCountry,
         string $getState
-    ): Response
+    )
     {
         // Country State
         $state = $country->state(true, $getCountry, $getState);

@@ -15,14 +15,17 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class AccountService
 {
     private $entityManager;
+    private $security;
 
     public function __construct(
         EntityManagerInterface $entityManager,
-        private TranslatorInterface $lang
+        private TranslatorInterface $lang,
+        SecurityService $security
     )
     {
         $this->entityManager = $entityManager;
         $this->lang = $lang;
+        $this->security = $security;
     }
 
     /**
@@ -862,5 +865,60 @@ class AccountService
 
         // Return Data
         return $data;
+    }
+
+    
+    ####################################### SECURITY ######################################
+    ######################################################################################
+
+
+    /**
+     * Change Password
+     * 
+     * update password
+     * 
+     * @param bool jsonResponse
+     * @param User user
+     * @param string oldPassword
+     * @param string newPassword
+     */
+    public function updatePassword(
+        bool $jsonResponse,
+        User $user,
+        string $oldPassword,
+        string $newPassword
+    )
+    {
+        try {
+            
+            // Verify current password
+            $verifyUserByPassword = $this->security->userNewOldPasswordMatch($user, $oldPassword, $newPassword);
+
+            // Exception
+            if($verifyUserByPassword instanceof \Exception) throw new \Exception($verifyUserByPassword->getMessage());
+            
+
+            // Hash new Password
+            $passwordHash = $this->security->userPasswordHash($user, $newPassword);
+
+            // Exception
+            if($passwordHash instanceof \Exception) throw new \Exception($passwordHash->getMessage());
+
+            // Update Data
+            $user->setPassword($passwordHash);
+
+            // Flush changes
+            $this->entityManager->flush();
+
+            // Add Activity
+            $this->security->addUserActivity($user, 'auth_reset_password', 'Change Password', $user->getMode());
+
+            // Return Response
+            return ResponseUtil::response($jsonResponse, $user, 200, ['user' => $user->getFullName(), 'email' => $user->getEmail()], $this->lang->trans('account.action.success'));
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return ResponseUtil::response($jsonResponse, $th, 400, null, $th->getMessage());
+        }
     }
 }

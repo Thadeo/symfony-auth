@@ -31,6 +31,8 @@ class AuthController extends BaseController
             'first_name' => 'required|string|min:4',
             'middle_name' => 'required|string|min:4',
             'last_name' => 'required|string|min:4',
+            'birth_date' => 'required|string|date:d/m/Y',
+            'gender' => 'required|string|match:[M,F]',
             'email' => 'required|email',
             'password' => 'required|string'
         ]);
@@ -45,6 +47,8 @@ class AuthController extends BaseController
                         $validate['first_name'],
                         $validate['middle_name'],
                         $validate['last_name'],
+                        $validate['birth_date'],
+                        $validate['gender'],
                         $validate['email'],
                         $validate['password']);
 

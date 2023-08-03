@@ -16,6 +16,8 @@ validation.rule.value.url: value must be a valid url
 validation.rule.value.min: min value is %value%
 validation.rule.value.max: max value is %value%
 validation.rule.value.match: value %value% not valid
+validation.rule.invalid.date.format: date format %value% not valid, valid are %validValue%
+validation.rule.invalid.date.value: date %value% not in format of %validValue%
 
 # AUTHENTICATION
 auth.signup.success: Registration Successful

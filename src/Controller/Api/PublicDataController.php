@@ -29,6 +29,23 @@ class PublicDataController extends BaseController
     }
 
     /**
+     * Gender Type
+     * 
+     * Fetch Gender Type
+     */
+    #[Route('/api/data/gender-type', name: 'api_data_gender_type', methods: ['GET'])]
+    public function fetchGenderType(
+        AccountService $account
+    )
+    {
+        // Fetch Gender
+        $data = $account->allGenderType(true);
+
+        // Return Response
+        return $this->appJson($data);
+    }
+
+    /**
      * Country
      * 
      * get all country

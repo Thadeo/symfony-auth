@@ -24,6 +24,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\ManyToOne]
     private ?Country $country = null;
 
+    #[ORM\ManyToOne]
+    private ?UserGenderType $gender = null;
+
     #[ORM\Column(length: 255)]
     private ?string $firstName = null;
 
@@ -32,6 +35,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 255)]
     private ?string $lastName = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $birthDate = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $username = null;
@@ -132,6 +138,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function getGender(): ?UserGenderType
+    {
+        return $this->gender;
+    }
+
+    public function setGender(?UserGenderType $gender): static
+    {
+        $this->gender = $gender;
+
+        return $this;
+    }
+
     public function getFirstName(): ?string
     {
         return $this->firstName;
@@ -171,6 +189,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getFullName(): ?string
     {
         return $this->firstName.' '.$this->middleName.' '.$this->lastName;
+    }
+
+    public function getBirthDate(): ?\DateTimeInterface
+    {
+        return $this->birthDate;
+    }
+
+    public function setBirthDate(\DateTimeInterface $birthDate): static
+    {
+        $this->birthDate = $birthDate;
+
+        return $this;
     }
 
     public function getUsername(): ?string

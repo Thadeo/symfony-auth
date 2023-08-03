@@ -2,6 +2,7 @@
 namespace App\Service;
 
 use App\Component\Util\EntityUtil;
+use App\Component\Util\FormatUtil;
 use App\Component\Util\GenerateUtil;
 use App\Component\Util\ResponseUtil;
 use App\Entity\AuthType;
@@ -56,6 +57,8 @@ class AuthService
      * @param string firstname
      * @param string middlename
      * @param string lastname
+     * @param string birthdate
+     * @param string gender
      * @param string email
      * @param string password
      */
@@ -66,6 +69,8 @@ class AuthService
         string $firtName,
         string $middleName,
         string $lastName,
+        string $birthDate,
+        string $gender,
         string $email,
         string $password
     )
@@ -89,6 +94,12 @@ class AuthService
 
             // Exception
             if($verifyEmail instanceof \Exception) throw new \Exception($verifyEmail->getMessage());
+
+            // Find gender
+            $findGender = EntityUtil::findOneGenderType($this->lang, $this->entityManager, $gender);
+
+            // Exception
+            if($findGender instanceof \Exception) throw new \Exception($findGender->getMessage());
             
             // Verify password
             if($this->security->validateUserPassword($password) instanceof \Exception) throw new \Exception($this->security->validateUserPassword($password)->getMessage());
@@ -110,6 +121,8 @@ class AuthService
             $user->setFirstName($firtName);
             $user->setMiddleName($middleName);
             $user->setLastName($lastName);
+            $user->setBirthDate(FormatUtil::dateToDateTime($birthDate));
+            $user->setGender($findGender);
             $user->setEmail($email);
             $user->setPassword($passwordHash);
             $user->setIsVerified(false);

@@ -1,6 +1,8 @@
 <?php
 namespace App\Component\Util;
 
+use DateTime;
+
 /**
  * Format Util
  * 
@@ -34,5 +36,24 @@ class FormatUtil
 
         // Return Clean Phone
         return $phoneNumber;
+    }
+
+    /**
+     * Date to Datetime
+     * 
+     * @param string date
+     * @return Datetime
+     * 
+     */
+    public static function dateToDateTime(
+        string $date,
+        string $format = 'd/m/Y'
+    )
+    {
+        // Convert to datetime
+        $datetime = \DateTime::createFromFormat($format, $date);
+
+        // Return Datetime
+        return $datetime;
     }
 }

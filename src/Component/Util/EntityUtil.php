@@ -14,6 +14,7 @@ use App\Entity\User;
 use App\Entity\UserAccountType;
 use App\Entity\UserAddress;
 use App\Entity\UserDevices;
+use App\Entity\UserGenderType;
 use App\Entity\UserPhone;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -509,6 +510,68 @@ class EntityUtil
 
             // Return State
             return $states;
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return $th;
+        }
+    }
+
+    /**
+     * Find All Gender Type
+     * 
+     * @param TranslatorInterface lang
+     * @param EntityManagerInterface entitymanager
+     * 
+     * @return UserGenderType
+     */
+    public static function findAllGenderType(
+        TranslatorInterface $lang,
+        EntityManagerInterface $entityManager
+    )
+    {
+        try {
+
+            // Find Gender
+            $findGender = $entityManager->getRepository(UserGenderType::class)->findBy(['active' => true]);
+
+            // Gender not exist
+            if(!$findGender) throw new \Exception("Gender not exist");
+
+            // Return Gender
+            return $findGender;
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return $th;
+        }
+    }
+
+    /**
+     * Find One Gender Type
+     * 
+     * @param TranslatorInterface lang
+     * @param EntityManagerInterface entitymanager
+     * @param string gender
+     * 
+     * @return UserGenderType
+     */
+    public static function findOneGenderType(
+        TranslatorInterface $lang,
+        EntityManagerInterface $entityManager,
+        string $gender
+    )
+    {
+        try {
+
+            // Find Gender
+            $findGender = $entityManager->getRepository(UserGenderType::class)->findOneBy(['code' => $gender]);
+
+            // Gender not exist
+            if(!$findGender) throw new \Exception("Gender $gender not exist");
+
+            // Return Gender
+            return $findGender;
 
         } catch (\Exception $th) {
             //throw $th;

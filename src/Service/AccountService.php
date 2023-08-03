@@ -69,6 +69,46 @@ class AccountService
     }
 
     /**
+     * Gender Type
+     * 
+     * get All User Gender
+     * 
+     * @param bool jsonResponse
+     */
+    public function allGenderType(
+        bool $jsonResponse
+    )
+    {
+        try {
+
+            // Find Gender Type
+            $genderType = EntityUtil::findAllGenderType($this->lang, $this->entityManager);
+
+            // Exception
+            if($genderType instanceof \Exception) throw new \Exception($genderType->getMessage());
+            
+            // Hold data
+            $data = [];
+
+            // Loop Gender Type
+            foreach ($genderType as $key => $gender) {
+                # code...
+                $data[] = [
+                    'name' => $gender->getName(),
+                    'code' => $gender->getCode()
+                ];
+            }
+            
+            // Return Response
+            return ResponseUtil::response($jsonResponse, $genderType, 200, $data, $this->lang->trans('role.action.success'));
+
+        } catch (\Exception $th) {
+            //throw $th;
+            return ResponseUtil::response($jsonResponse, $th, 400, [], $th->getMessage());
+        }
+    }
+
+    /**
      * User Profile
      * 
      * Update Profile
@@ -78,6 +118,8 @@ class AccountService
      * @param string firstname
      * @param string middlename
      * @param string lastname
+     * @param string birthDate
+     * @param string gender
      * @param string email
      * 
      */
@@ -87,6 +129,8 @@ class AccountService
         string $firtName = null,
         string $middleName = null,
         string $lastName = null,
+        string $birthDate = null,
+        string $gender = null,
         string $email = null
     )
     {
@@ -107,11 +151,22 @@ class AccountService
                     
                 }
             }
+
+            // Check gender if exist
+            if($gender) {
+                // Find gender
+                $findGender = EntityUtil::findOneGenderType($this->lang, $this->entityManager, $gender);
+
+                // Exception
+                if($findGender instanceof \Exception) throw new \Exception($findGender->getMessage());
+            }
             
             // Update new details
             if($firtName) $user->setFirstName($firtName);
             if($middleName) $user->setMiddleName($middleName);
             if($lastName) $user->setLastName($lastName);
+            if($birthDate) $user->setBirthDate(FormatUtil::dateToDateTime($birthDate));
+            if($gender) $user->setGender($findGender);
             if($email) $user->setEmail($email);
 
             // Flush Changes
@@ -162,7 +217,9 @@ class AccountService
         $data = [
             'first_name' => $user->getFirstName(),
             'last_name' => $user->getLastName(),
-            'middle_name' => $user->getMiddleName()
+            'middle_name' => $user->getMiddleName(),
+            'birth_date' => $user->getBirthDate()->format('d/m/Y'),
+            'gender' => $user->getGender()->getName()
         ];
 
         // Return Data

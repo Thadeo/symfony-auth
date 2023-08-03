@@ -9,7 +9,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  */
 class AppValidation
 {
-    private $ruleKeys = ['required', 'numeric', 'string', 'amount', 'bool', 'min', 'max', 'match', 'phone', 'email', 'url'];
+    private $ruleKeys = ['required', 'numeric', 'string', 'amount', 'bool', 'min', 'max', 'match', 'phone', 'email', 'url', 'date'];
+    private $validDateFormat = 'd/m/Y';
 
     public function __construct(
         private TranslatorInterface $lang
@@ -255,6 +256,29 @@ class AppValidation
                 }
                 
             } ##
+
+            # Check date
+            if(in_array($ruleKey, ['date'])) {
+
+                // Verify if has value
+                if(!empty($ruleValue) && !empty($requestValue)) {
+                 
+                    // Verify if ruleValue is match
+                    if(!VariableValidation::isMatch($ruleValue, '['.$this->validDateFormat.']')) {
+                        $errors = $this->lang->trans('validation.rule.invalid.date.format', ['%value%' => $ruleValue, '%validValue%' => $this->validDateFormat]);
+                    }else {
+                        # Verify date
+
+                        // Format Date
+                        $date = \DateTime::createFromFormat($ruleValue, $requestValue);
+
+                        // Verify if date is correct
+                        if($date->format($ruleValue) !== $requestValue) $errors =  $this->lang->trans('validation.rule.invalid.date.value', ['%value%' => $requestValue, '%validValue%' => $ruleValue]);
+
+                    }
+                }
+                 
+             } ##
             
 
             // Verify if errors has value

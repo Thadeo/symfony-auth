@@ -24,6 +24,8 @@ class AccountController extends BaseController
             'first_name' => 'required|string|min:4',
             'middle_name' => 'string|min:4',
             'last_name' => 'string|min:4',
+            'birth_date' => 'string|date:d/m/Y',
+            'gender' => 'string|match:[M,F]',
             'email' => 'email'
         ]);
 
@@ -35,6 +37,8 @@ class AccountController extends BaseController
                         $validate['first_name'],
                         $validate['middle_name'],
                         $validate['last_name'],
+                        $validate['birth_date'],
+                        $validate['gender'],
                         $validate['email']);
 
         // Return Response
